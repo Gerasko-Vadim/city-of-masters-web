@@ -4,14 +4,14 @@ import { Table, Button, message } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "../shared";
-import CreateOrderModal from "./CreateOrderModal";
-import { mapOrderStatusToLabel } from "./lib";
-import { OrderStatus } from "./model";
+import CreateOrderModal from "../orders/CreateOrderModal";
+import { mapOrderStatusToLabel } from "../orders/lib";
+import { OrderStatus } from "../orders/model";
 import { io } from "socket.io-client";
 import axios from "axios";
 
-export default function OrdersPage() {
-  const [orders, setOrders] = useState<any[]>([]); // Added typing hint
+export default function OrdersTable() {
+  const [orders, setOrders] = useState<any[]>([]);
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const router = useRouter();
@@ -80,10 +80,15 @@ export default function OrdersPage() {
         rowKey="id"
         dataSource={orders}
         columns={[
+          { title: "ID", dataIndex: "id", width: 60 },
           { title: "Имя", dataIndex: "customerName" },
           { title: "Телефон", dataIndex: "phone" },
           { title: "Адрес", dataIndex: "address" },
-          { title: "Сумма", dataIndex: "totalAmount" },
+          { 
+             title: "Сумма", 
+             dataIndex: "totalAmount",
+             render: (val: number) => `${val} ₽`
+          },
           {
             title: "Статус",
             dataIndex: "status",
@@ -110,4 +115,3 @@ export default function OrdersPage() {
     </>
   );
 }
-
