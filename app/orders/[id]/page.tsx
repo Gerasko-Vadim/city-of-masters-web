@@ -66,7 +66,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
   }
 
   return (
-    <div className="p-6 max-w-4xl mx-auto">
+    <div className="p-6 max-w-[1400px] mx-auto">
       <Button
         type="text"
         icon={<ArrowLeftOutlined />}
@@ -76,111 +76,118 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
         Назад к списку
       </Button>
 
-      <div className="flex justify-between items-center mb-6">
-        <Title level={2}>Заказ #{order.id}</Title>
-      </div>
+      <div className="flex flex-col lg:flex-row gap-6">
+        {/* Left column: 70% */}
+        <div className="lg:w-[70%]">
+          <div className="flex justify-between items-center mb-6">
+            <Title level={2}>Заказ #{order.id}</Title>
+          </div>
 
-      <Form
-        form={form}
-        layout="vertical"
-        onFinish={onFinish}
-        initialValues={order}
-      >
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Card title="Информация о клиенте" bordered={false}>
-            <Form.Item
-              label="Имя клиента"
-              name="customerName"
-              rules={[{ required: true, message: "Введите имя" }]}
-            >
-              <Input />
-            </Form.Item>
-            <Form.Item
-              label="Телефон"
-              name="phone"
-              rules={[{ required: true, message: "Введите телефон" }]}
-            >
-              <Input />
-            </Form.Item>
-          </Card>
-
-          <Card title="Детали заказа" bordered={false}>
-            <Form.Item
-              label="Статус"
-              name="status"
-              rules={[{ required: true }]}
-            >
-              <Select>
-                {Object.values(OrderStatus).map((status) => (
-                  <Option key={status} value={status}>
-                    {mapOrderStatusToLabel[status]}
-                  </Option>
-                ))}
-              </Select>
-            </Form.Item>
-
-            <Form.Item
-              label="Адрес"
-              name="address"
-              rules={[{ required: true, message: "Введите адрес" }]}
-            >
-              <Input />
-            </Form.Item>
-
-            <Form.Item
-              label="Сумма"
-              name="totalAmount"
-              rules={[{ required: true, message: "Введите сумму" }]}
-            >
-              <InputNumber
-                style={{ width: "100%" }}
-                formatter={(value) =>
-                  `₽ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
-                }
-                parser={(value) => {
-                  const parsed = value?.replace(/₽\s?|(,*)/g, "") || "0";
-                  return Number(parsed);
-                }}
-              />
-            </Form.Item>
-          </Card>
-        </div>
-
-        <Card title="Расположение" className="mt-6" bordered={false}>
-          {/* Hidden fields to store lat/lng */}
-          <Form.Item name="lat" hidden>
-            <Input />
-          </Form.Item>
-          <Form.Item name="lng" hidden>
-            <Input />
-          </Form.Item>
-
-          <Form.Item>
-            <MapPicker
-              value={{ lat: order.lat, lng: order.lng }}
-              onChange={(lat, lng) => {
-                form.setFieldsValue({ lat, lng });
-              }}
-            />
-          </Form.Item>
-        </Card>
-
-        <div className="mt-6 flex justify-end">
-          <Button
-            type="primary"
-            htmlType="submit"
-            icon={<SaveOutlined />}
-            loading={saving}
-            size="large"
+          <Form
+            form={form}
+            layout="vertical"
+            onFinish={onFinish}
+            initialValues={order}
           >
-            Сохранить изменения
-          </Button>
-        </div>
-      </Form>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+              <Card title="Информация о клиенте" bordered={false}>
+                <Form.Item
+                  label="Имя клиента"
+                  name="customerName"
+                  rules={[{ required: true, message: "Введите имя" }]}
+                >
+                  <Input />
+                </Form.Item>
+                <Form.Item
+                  label="Телефон"
+                  name="phone"
+                  rules={[{ required: true, message: "Введите телефон" }]}
+                >
+                  <Input />
+                </Form.Item>
+              </Card>
 
-      {order.assignedSpecialistId && (
-        <ChatBox orderId={order.id} />
-      )}
+              <Card title="Детали заказа" bordered={false}>
+                <Form.Item
+                  label="Статус"
+                  name="status"
+                  rules={[{ required: true }]}
+                >
+                  <Select>
+                    {Object.values(OrderStatus).map((status) => (
+                      <Option key={status} value={status}>
+                        {mapOrderStatusToLabel[status]}
+                      </Option>
+                    ))}
+                  </Select>
+                </Form.Item>
+
+                <Form.Item
+                  label="Адрес"
+                  name="address"
+                  rules={[{ required: true, message: "Введите адрес" }]}
+                >
+                  <Input />
+                </Form.Item>
+
+                <Form.Item
+                  label="Сумма"
+                  name="totalAmount"
+                  rules={[{ required: true, message: "Введите сумму" }]}
+                >
+                  <InputNumber
+                    style={{ width: "100%" }}
+                    formatter={(value) =>
+                      `₽ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    }
+                    parser={(value) => {
+                      const parsed = value?.replace(/₽\s?|(,*)/g, "") || "0";
+                      return Number(parsed);
+                    }}
+                  />
+                </Form.Item>
+              </Card>
+            </div>
+
+            <Card title="Расположение" className="mt-6" bordered={false}>
+              <Form.Item name="lat" hidden>
+                <Input />
+              </Form.Item>
+              <Form.Item name="lng" hidden>
+                <Input />
+              </Form.Item>
+
+              <Form.Item>
+                <MapPicker
+                  value={{ lat: order.lat, lng: order.lng }}
+                  onChange={(lat, lng) => {
+                    form.setFieldsValue({ lat, lng });
+                  }}
+                />
+              </Form.Item>
+            </Card>
+
+            <div className="mt-6 flex justify-end">
+              <Button
+                type="primary"
+                htmlType="submit"
+                icon={<SaveOutlined />}
+                loading={saving}
+                size="large"
+              >
+                Сохранить изменения
+              </Button>
+            </div>
+          </Form>
+        </div>
+
+        {/* Right column: 30% */}
+        <div className="lg:w-[30%]">
+          {order.assignedSpecialistId && (
+            <ChatBox orderId={order.id} />
+          )}
+        </div>
+      </div>
     </div>
   );
 }

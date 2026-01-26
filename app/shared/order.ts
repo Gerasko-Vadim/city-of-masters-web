@@ -11,9 +11,17 @@ export interface CreateOrderDto {
 
 export enum OrderStatus {
   NEW = 'NEW',
+  PAID = 'PAID',
   IN_PROGRESS = 'IN_PROGRESS',
-  DONE = 'DONE',
+  COMPLETED = 'COMPLETED',
 }
+
+export const mapOrderStatusToLabel = {
+  [OrderStatus.NEW]: 'Новый',
+  [OrderStatus.PAID]: 'Оплачен',
+  [OrderStatus.IN_PROGRESS]: 'В работе',
+  [OrderStatus.COMPLETED]: 'Завершён',
+};
 
 export interface Order extends CreateOrderDto {
   id: number;

@@ -58,10 +58,10 @@ export default function ChatBox({ orderId }: Props) {
   };
 
   return (
-    <Card title="Чат со специалистом" bordered={false} className="mt-6">
+    <Card title="Чат со специалистом" bordered={false}>
       <div 
         ref={scrollRef}
-        style={{ height: 300, overflowY: "auto", marginBottom: 16, border: "1px solid #f0f0f0", padding: 12, borderRadius: 8 }}
+        style={{ height: 600, overflowY: "auto", marginBottom: 16, border: "1px solid #f0f0f0", padding: 12, borderRadius: 8 }}
       >
         <List
           dataSource={messages}

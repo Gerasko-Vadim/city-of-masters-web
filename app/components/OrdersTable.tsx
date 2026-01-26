@@ -1,6 +1,6 @@
 "use client";
 
-import { Table, Button, message } from "antd";
+import { Table, Button, message, Tag, Select } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "../shared";
@@ -9,6 +9,13 @@ import { mapOrderStatusToLabel } from "../orders/lib";
 import { OrderStatus } from "../orders/model";
 import { io } from "socket.io-client";
 import axios from "axios";
+
+const statusColors: Record<string, string> = {
+  [OrderStatus.NEW]: "blue",
+  [OrderStatus.PAID]: "gold",
+  [OrderStatus.IN_PROGRESS]: "cyan",
+  [OrderStatus.COMPLETED]: "green",
+};
 
 export default function OrdersTable() {
   const [orders, setOrders] = useState<any[]>([]);
@@ -92,8 +99,32 @@ export default function OrdersTable() {
           {
             title: "Статус",
             dataIndex: "status",
-            render: (status: OrderStatus) => {
-              return mapOrderStatusToLabel[status];
+            render: (status: OrderStatus, record: any) => {
+              return (
+                <div onClick={(e) => e.stopPropagation()}>
+                  <Select
+                    value={status}
+                    style={{ width: 140 }}
+                    onChange={async (newStatus) => {
+                      try {
+                        await api.patch(`/order/${record.id}`, { status: newStatus });
+                        message.success(`Статус заказа #${record.id} обновлен`);
+                        loadOrders();
+                      } catch (err) {
+                        message.error("Не удалось обновить статус");
+                      }
+                    }}
+                  >
+                    {Object.values(OrderStatus).map((s) => (
+                      <Select.Option key={s} value={s}>
+                        <Tag color={statusColors[s] || "default"} style={{ border: 'none', margin: 0 }}>
+                          {mapOrderStatusToLabel[s] || s}
+                        </Tag>
+                      </Select.Option>
+                    ))}
+                  </Select>
+                </div>
+              );
             },
           },
         ]}
