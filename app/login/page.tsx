@@ -18,7 +18,7 @@ export default function LoginPage() {
 
     localStorage.setItem('token', res.data.accessToken);
 
-    router.push('/orders');
+    router.push('/');
   };
 
   return (

@@ -1,6 +1,6 @@
 "use client";
 
-import { Modal, Form, Input, InputNumber, message } from "antd";
+import { Modal, Form, Input, InputNumber, message, Tag } from "antd";
 import { api } from "../shared";
 import { MapPicker } from "./MapPicker";
 import { CreateOrderDto } from "../shared/order";
@@ -52,6 +52,40 @@ export default function CreateOrderModal({ open, onClose, onCreated }: Props) {
           <Input />
         </Form.Item>
 
+        <Form.Item label="Описание" name="description">
+          <Input.TextArea rows={3} placeholder="Введите описание или выберите из списка" />
+        </Form.Item>
+
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, color: "#8c8c8c", marginBottom: 4 }}>Сантехника:</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {["Замена крана", "Установка унитаза", "Чистка засора"].map((s) => (
+              <Tag 
+                key={s} 
+                style={{ cursor: "pointer" }}
+                onClick={() => form.setFieldsValue({ description: s })}
+              >
+                {s}
+              </Tag>
+            ))}
+          </div>
+        </div>
+
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, color: "#8c8c8c", marginBottom: 4 }}>Электрика:</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {["Замена розетки", "Установка люстры", "Ремонт проводки"].map((s) => (
+              <Tag 
+                key={s} 
+                style={{ cursor: "pointer" }}
+                onClick={() => form.setFieldsValue({ description: s })}
+              >
+                {s}
+              </Tag>
+            ))}
+          </div>
+        </div>
+
         <Form.Item
           label="Сумма"
           name="totalAmount"
@@ -59,6 +93,22 @@ export default function CreateOrderModal({ open, onClose, onCreated }: Props) {
         >
           <InputNumber min={0} style={{ width: "100%" }} />
         </Form.Item>
+
+        <div style={{ marginBottom: 16 }}>
+          <div style={{ fontSize: 12, color: "#8c8c8c", marginBottom: 4 }}>Быстрый выбор цены:</div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
+            {[500, 1000, 1500, 2000, 3000, 5000].map((p) => (
+              <Tag 
+                key={p} 
+                color="blue"
+                style={{ cursor: "pointer" }}
+                onClick={() => form.setFieldsValue({ totalAmount: p })}
+              >
+                {p}₽
+              </Tag>
+            ))}
+          </div>
+        </div>
 
         <Form.Item name="lat" hidden>
           <Input />

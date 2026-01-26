@@ -3,6 +3,8 @@ export interface CreateOrderDto {
   phone: string;
   address: string;
   totalAmount: number;
+  description?: string;
+  assignedSpecialistId?: number;
   lat: number;
   lng: number;
 }

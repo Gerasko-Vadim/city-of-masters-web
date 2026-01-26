@@ -4,6 +4,7 @@ import { Table, Tag, message } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "../shared";
+import SpecialistsMap from "./SpecialistsMap";
 
 export default function SpecialistsTable() {
   const [specialists, setSpecialists] = useState<any[]>([]);
@@ -27,6 +28,7 @@ export default function SpecialistsTable() {
   }, [loadSpecialists]);
 
   return (
+    <>
     <Table
       loading={loading}
       rowKey="id"
@@ -64,5 +66,11 @@ export default function SpecialistsTable() {
         };
       }}
     />
+
+    <div style={{ marginTop: 40 }}>
+      <h3 style={{ marginBottom: 16 }}>Карта специалистов</h3>
+      <SpecialistsMap specialists={specialists} />
+    </div>
+    </>
   );
 }
