@@ -129,7 +129,26 @@ export default function SpecialistDetailPage({ params }: { params: Promise<{ id:
                   dataIndex: "status",
                   render: (status: any) => mapOrderStatusToLabel[status as keyof typeof mapOrderStatusToLabel] || status
                 },
-                { title: "Дата", dataIndex: "createdAt", render: (d: string) => new Date(d).toLocaleDateString() }
+                { title: "Дата", dataIndex: "createdAt", render: (d: string) => new Date(d).toLocaleDateString() },
+                { 
+                  title: "Время работы", 
+                  render: (_: any, record: any) => {
+                    if (!record.startedAt) return "—";
+                    
+                    const end = record.completedAt ? new Date(record.completedAt).getTime() : 
+                                record.status === 'IN_PROGRESS' ? null : null;
+                    
+                    if (!end && record.status === 'IN_PROGRESS') return <Tag color="blue">В процессе</Tag>;
+                    if (!record.completedAt) return "—";
+
+                    const diff = new Date(record.completedAt).getTime() - new Date(record.startedAt).getTime();
+                    const s = Math.floor(diff / 1000);
+                    const h = Math.floor(s / 3600);
+                    const m = Math.floor((s % 3600) / 60);
+                    const remS = s % 60;
+                    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${remS.toString().padStart(2, '0')}`;
+                  }
+                }
             ]}
             onRow={(record: any) => ({
                 onClick: () => router.push(`/orders/${record.id}`),

@@ -8,7 +8,6 @@ import { Button, Card, Form, Input, InputNumber, Select, message, Spin, Typograp
 import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
 import { MapPicker } from "../MapPicker";
 import { mapOrderStatusToLabel } from "../lib";
-import ChatBox from "../../components/ChatBox";
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -77,8 +76,8 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
       </Button>
 
       <div className="flex flex-col lg:flex-row gap-6">
-        {/* Left column: 70% */}
-        <div className="lg:w-[70%]">
+        {/* Center column: 100% */}
+        <div className="w-full">
           <div className="flex justify-between items-center mb-6">
             <Title level={2}>Заказ #{order.id}</Title>
           </div>
@@ -181,11 +180,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
           </Form>
         </div>
 
-        {/* Right column: 30% */}
-        <div className="lg:w-[30%]">
-          {order.assignedSpecialistId && (
-            <ChatBox orderId={order.id} />
-          )}
         </div>
       </div>
     </div>
