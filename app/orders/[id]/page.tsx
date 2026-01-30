@@ -179,8 +179,6 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
             </div>
           </Form>
         </div>
-
-        </div>
       </div>
     </div>
   );
