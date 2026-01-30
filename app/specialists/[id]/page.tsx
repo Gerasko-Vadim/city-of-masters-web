@@ -15,6 +15,31 @@ export default function SpecialistDetailPage({ params }: { params: Promise<{ id:
   const router = useRouter();
   const [specialist, setSpecialist] = useState<any>(null);
   const [loading, setLoading] = useState(true);
+  const [activeOrderDuration, setActiveOrderDuration] = useState("");
+
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (specialist?.activeOrder?.startedAt) {
+      const updateTimer = () => {
+        const start = new Date(specialist.activeOrder.startedAt).getTime();
+        const now = new Date().getTime();
+        const diff = Math.max(0, now - start);
+        
+        const hours = Math.floor(diff / 3600000);
+        const minutes = Math.floor((diff % 3600000) / 60000);
+        const seconds = Math.floor((diff % 60000) / 1000);
+        
+        setActiveOrderDuration(
+          `${hours.toString().padStart(2, "0")}:${minutes
+            .toString()
+            .padStart(2, "0")}:${seconds.toString().padStart(2, "0")}`
+        );
+      };
+      updateTimer();
+      interval = setInterval(updateTimer, 1000);
+    }
+    return () => clearInterval(interval);
+  }, [specialist]);
 
   useEffect(() => {
     const fetchSpecialist = async () => {
@@ -50,6 +75,34 @@ export default function SpecialistDetailPage({ params }: { params: Promise<{ id:
               {specialist.isOnShift ? "На смене" : "Не на смене"}
             </Tag>
           </div>
+
+      {specialist.activeOrder && (
+        <Card title="👉 Активный заказ в работе" className="mb-6 border-blue-400 bg-blue-50">
+          <div className="flex flex-col md:flex-row justify-between items-center">
+            <div>
+              <Title level={4}>Заказ #{specialist.activeOrder.id}</Title>
+              <p><strong>Адрес:</strong> {specialist.activeOrder.address}</p>
+              <p><strong>Сумма:</strong> {specialist.activeOrder.totalAmount} сом</p>
+              {specialist.activeOrder.description && (
+                <p><strong>Описание:</strong> {specialist.activeOrder.description}</p>
+              )}
+            </div>
+            <div className="text-center md:text-right mt-4 md:mt-0">
+              <Text type="secondary">Время в работе:</Text>
+              <div className="text-3xl font-mono text-blue-600">
+                {activeOrderDuration}
+              </div>
+              <Button 
+                type="primary" 
+                className="mt-2"
+                onClick={() => router.push(`/orders/${specialist.activeOrder.id}`)}
+              >
+                Перейти к заказу
+              </Button>
+            </div>
+          </div>
+        </Card>
+      )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
             <Card title="Информация">
