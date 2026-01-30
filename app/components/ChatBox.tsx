@@ -37,9 +37,20 @@ export default function ChatBox({ orderId, specialistId, title = "Чат со с
     });
 
     // Connect to WebSocket
-    const socket = io(API_PATH);
+    console.log("Connecting to WebSocket at", API_PATH);
+    const socket = io(API_PATH, { transports: ["websocket", "polling"] });
+    
+    socket.on("connect", () => {
+      console.log("WebSocket connected, listening for", socketEvent);
+    });
+
     socket.on(socketEvent, (msg: Message) => {
+      console.log("Received message on", socketEvent, msg);
       setMessages((prev) => [...prev, msg]);
+    });
+
+    socket.on("connect_error", (err) => {
+      console.error("WebSocket connection error:", err);
     });
 
     return () => {
