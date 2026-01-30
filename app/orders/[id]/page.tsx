@@ -8,7 +8,7 @@ import { Button, Card, Form, Input, InputNumber, Select, message, Spin, Typograp
 import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
 import { MapPicker } from "../MapPicker";
 import { mapOrderStatusToLabel } from "../lib";
-import ChatBox from "./ChatBox";
+import ChatBox from "../../components/ChatBox";
 
 const { Title } = Typography;
 const { Option } = Select;
