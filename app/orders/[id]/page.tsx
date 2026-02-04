@@ -10,7 +10,7 @@ import { MapPicker } from "../MapPicker";
 import { mapOrderStatusToLabel } from "../lib";
 import { OpenStreetMapProvider } from "leaflet-geosearch";
 import { io } from "socket.io-client";
-import { API_PATH } from "../../shared/api";
+import { API_PATH } from "../../shared";
 
 
 
@@ -90,11 +90,16 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
         }
       }
 
+      if (!order) {
+        message.error("Заказ не загружен");
+        return;
+      }
+
       const payload = {
         ...values,
-        lat: parseFloat(lat),
-        lng: parseFloat(lng),
-        totalAmount: parseFloat(values.totalAmount),
+        lat: lat ? parseFloat(lat.toString()) : order.lat,
+        lng: lng ? parseFloat(lng.toString()) : order.lng,
+        totalAmount: parseFloat(values.totalAmount?.toString() || "0"),
       };
       const res = await api.patch(`/order/${id}`, payload);
       const updatedOrder = res.data;

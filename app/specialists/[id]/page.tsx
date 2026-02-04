@@ -8,7 +8,7 @@ import { ArrowLeftOutlined } from "@ant-design/icons";
 import { mapOrderStatusToLabel } from "../../orders/lib";
 import ChatBox from "../../components/ChatBox";
 import { io } from "socket.io-client";
-import { API_PATH } from "../../shared/api";
+import { API_PATH } from "../../shared";
 
 const { Title, Text } = Typography;
 
@@ -62,13 +62,13 @@ export default function SpecialistDetailPage({ params }: { params: Promise<{ id:
 
     socket.on("specialistUpdate", (updatedSpec: any) => {
       if (updatedSpec.id === Number(id)) {
-        setSpecialist(prev => ({ ...prev, ...updatedSpec }));
+        setSpecialist((prev: any) => ({ ...prev, ...updatedSpec }));
       }
     });
 
     socket.on("orderUpdate", (updatedOrder: any) => {
       // If the update is for the specialist's active order, or relates to them
-      setSpecialist(prev => {
+      setSpecialist((prev: any) => {
         if (!prev) return prev;
         
         // Update active order if it matches

@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { api } from "../shared";
-import { OrderStatus } from "../orders/model";
+import { OrderStatus } from "../shared/order";
 import { mapOrderStatusToLabel } from "../orders/lib";
 import { io } from "socket.io-client";
 import { API_PATH } from "../shared/api";

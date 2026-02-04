@@ -1,4 +1,4 @@
-import { OrderStatus } from "./model";
+import { OrderStatus } from "../shared/order";
 
 export const mapOrderStatusToLabel = {
   [OrderStatus.NEW]: 'Новый',

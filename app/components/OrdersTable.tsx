@@ -3,12 +3,11 @@
 import { Table, Button, message, Tag, Select, Tabs } from "antd";
 import { useCallback, useEffect, useState, useMemo } from "react";
 import { useRouter } from "next/navigation";
-import { api } from "../shared";
+import { api, API_PATH } from "../shared";
 import CreateOrderModal from "../orders/CreateOrderModal";
 import { mapOrderStatusToLabel } from "../orders/lib";
-import { OrderStatus } from "../orders/model";
+import { OrderStatus } from "../shared/order";
 import { io } from "socket.io-client";
-import { API_PATH } from "../shared/api";
 import axios from "axios";
 
 const statusColors: Record<string, string> = {
