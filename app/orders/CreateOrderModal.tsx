@@ -4,7 +4,6 @@ import { Modal, Form, Input, InputNumber, message, Tag } from "antd";
 import { api } from "../shared";
 import { MapPicker } from "./MapPicker";
 import { CreateOrderDto } from "../shared/order";
-import { OpenStreetMapProvider } from "leaflet-geosearch";
 
 
 
@@ -35,6 +34,7 @@ export default function CreateOrderModal({ open, onClose, onCreated }: Props) {
       let { lat, lng } = values;
 
       if (values.address && (!lat || !lng)) {
+        const { OpenStreetMapProvider } = await import("leaflet-geosearch");
         const provider = new OpenStreetMapProvider({
           params: {
             countrycodes: 'kg',

@@ -8,7 +8,6 @@ import { Button, Card, Form, Input, InputNumber, Select, message, Spin, Typograp
 import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
 import { MapPicker } from "../MapPicker";
 import { mapOrderStatusToLabel } from "../lib";
-import { OpenStreetMapProvider } from "leaflet-geosearch";
 import { io } from "socket.io-client";
 import { API_PATH } from "../../shared";
 
@@ -77,6 +76,7 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
 
       // Geocoding: find location by address if address is provided
       if (values.address && (!lat || !lng || values.address !== order?.address)) {
+        const { OpenStreetMapProvider } = await import("leaflet-geosearch");
         const provider = new OpenStreetMapProvider({
           params: {
             countrycodes: 'kg',

@@ -3,9 +3,11 @@
 import { Tabs, Typography } from "antd";
 import { useEffect } from "react";
 import { useRouter } from "next/navigation";
-import OrdersTable from "./components/OrdersTable";
-import SpecialistsTable from "./components/SpecialistsTable";
-import GlobalMap from "./components/GlobalMap";
+import dynamic from "next/dynamic";
+
+const OrdersTable = dynamic(() => import("./components/OrdersTable"), { ssr: false });
+const SpecialistsTable = dynamic(() => import("./components/SpecialistsTable"), { ssr: false });
+const GlobalMap = dynamic(() => import("./components/GlobalMap"), { ssr: false });
 
 const { Title } = Typography;
 
