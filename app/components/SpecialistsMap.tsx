@@ -2,12 +2,12 @@
 
 import dynamic from "next/dynamic";
 
-const LeafletMap = dynamic(() => import("./SpecialistsMapLeaflet"), { ssr: false });
+const SpecialistsTwoGisMap = dynamic(() => import("./SpecialistsTwoGisMap"), { ssr: false });
 
 type Props = {
   specialists: any[];
 };
 
 export default function SpecialistsMap(props: Props) {
-  return <LeafletMap {...props} />;
+  return <SpecialistsTwoGisMap {...props} />;
 }

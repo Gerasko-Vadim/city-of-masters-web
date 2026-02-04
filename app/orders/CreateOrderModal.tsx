@@ -4,6 +4,21 @@ import { Modal, Form, Input, InputNumber, message, Tag } from "antd";
 import { api } from "../shared";
 import { MapPicker } from "./MapPicker";
 import { CreateOrderDto } from "../shared/order";
+import { OpenStreetMapProvider } from "leaflet-geosearch";
+
+
+
+const formatPhone = (val: string) => {
+  let v = val.replace(/\D/g, '');
+  if (v.length === 0) return '';
+  if (!v.startsWith('996')) v = '996' + v;
+  v = v.slice(0, 12); // Max 12 digits for +996 (XXX) XXX-XXX
+  
+  if (v.length <= 3) return `+${v}`;
+  if (v.length <= 6) return `+${v.slice(0, 3)}(${v.slice(3)}`;
+  if (v.length <= 9) return `+${v.slice(0, 3)}(${v.slice(3, 6)})${v.slice(6)}`;
+  return `+${v.slice(0, 3)}(${v.slice(3, 6)})${v.slice(6, 9)}-${v.slice(9)}`;
+};
 
 
 type Props = {
@@ -17,7 +32,27 @@ export default function CreateOrderModal({ open, onClose, onCreated }: Props) {
 
   const onFinish = async (values: CreateOrderDto) => {
     try {
-      await api.post("/order", values);
+      let { lat, lng } = values;
+
+      if (values.address && (!lat || !lng)) {
+        const provider = new OpenStreetMapProvider({
+          params: {
+            countrycodes: 'kg',
+          },
+        });
+        const results = await provider.search({ query: values.address });
+        if (results && results.length > 0) {
+          lat = results[0].y;
+          lng = results[0].x;
+          message.info(`Локация определена: ${results[0].label}`);
+        }
+      }
+
+      await api.post("/order", {
+        ...values,
+        lat: lat ? parseFloat(lat.toString()) : undefined,
+        lng: lng ? parseFloat(lng.toString()) : undefined,
+      });
       message.success("Заказ создан");
       form.resetFields();
       onClose();
@@ -44,8 +79,13 @@ export default function CreateOrderModal({ open, onClose, onCreated }: Props) {
           <Input />
         </Form.Item>
 
-        <Form.Item label="Телефон" name="phone" rules={[{ required: true }]}>
-          <Input />
+        <Form.Item 
+          label="Телефон" 
+          name="phone" 
+          rules={[{ required: true, message: "Введите телефон" }]}
+          normalize={formatPhone}
+        >
+          <Input placeholder="+996(555)662-999" />
         </Form.Item>
 
         <Form.Item label="Адрес" name="address" rules={[{ required: true }]}>
@@ -104,7 +144,7 @@ export default function CreateOrderModal({ open, onClose, onCreated }: Props) {
                 style={{ cursor: "pointer" }}
                 onClick={() => form.setFieldsValue({ totalAmount: p })}
               >
-                {p}₽
+                {p} сом
               </Tag>
             ))}
           </div>

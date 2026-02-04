@@ -13,10 +13,16 @@ type Specialist = {
   lat: number;
   lng: number;
   name?: string;
+  isOnShift: boolean;
 };
 
 export async function getSpecialistsOnShift(): Promise<Specialist[]> {
   const response = await api.get("specialists/on-shift");
+  return response.data;
+}
+
+export async function getSpecialists(): Promise<Specialist[]> {
+  const response = await api.get("specialists");
   return response.data;
 }
 

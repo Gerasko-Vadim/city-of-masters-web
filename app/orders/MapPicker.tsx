@@ -2,7 +2,7 @@
 
 import dynamic from "next/dynamic";
 
-const LeafletMap = dynamic(() => import("./LeafletMap"), { ssr: false });
+const TwoGisMap = dynamic(() => import("./TwoGisMap"), { ssr: false });
 
 type Props = {
   value?: { lat: number; lng: number };
@@ -10,5 +10,5 @@ type Props = {
 };
 
 export function MapPicker(props: Props) {
-  return <LeafletMap {...props} />;
+  return <TwoGisMap {...props} />;
 }

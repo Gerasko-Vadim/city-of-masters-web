@@ -9,6 +9,7 @@
     "lint": "eslint"
   },
   "dependencies": {
+    "2gis-maps": "^3.7.1",
     "antd": "^6.1.2",
     "axios": "^1.13.2",
     "leaflet": "^1.9.4",

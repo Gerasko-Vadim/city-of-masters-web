@@ -8,6 +8,23 @@ import { Button, Card, Form, Input, InputNumber, Select, message, Spin, Typograp
 import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
 import { MapPicker } from "../MapPicker";
 import { mapOrderStatusToLabel } from "../lib";
+import { OpenStreetMapProvider } from "leaflet-geosearch";
+import { io } from "socket.io-client";
+import { API_PATH } from "../../shared/api";
+
+
+
+const formatPhone = (val: string) => {
+  let v = val.replace(/\D/g, '');
+  if (v.length === 0) return '';
+  if (!v.startsWith('996')) v = '996' + v;
+  v = v.slice(0, 12); // Max 12 digits
+  
+  if (v.length <= 3) return `+${v}`;
+  if (v.length <= 6) return `+${v.slice(0, 3)}(${v.slice(3)}`;
+  if (v.length <= 9) return `+${v.slice(0, 3)}(${v.slice(3, 6)})${v.slice(6)}`;
+  return `+${v.slice(0, 3)}(${v.slice(3, 6)})${v.slice(6, 9)}-${v.slice(9)}`;
+};
 
 const { Title } = Typography;
 const { Option } = Select;
@@ -38,15 +55,56 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
     }
   }, [id, form]);
 
+  useEffect(() => {
+    const socket = io(API_PATH, { transports: ["websocket", "polling"] });
+
+    socket.on("orderUpdate", (updatedOrder: any) => {
+      if (updatedOrder.id === Number(id)) {
+        setOrder(updatedOrder);
+        form.setFieldsValue(updatedOrder);
+      }
+    });
+
+    return () => {
+      socket.disconnect();
+    };
+  }, [id, form]);
+
   const onFinish = async (values: any) => {
     setSaving(true);
     try {
-      const res = await api.patch(`/order/${id}`, values);
-      setOrder(res.data);
+      let { lat, lng } = values;
+
+      // Geocoding: find location by address if address is provided
+      if (values.address && (!lat || !lng || values.address !== order?.address)) {
+        const provider = new OpenStreetMapProvider({
+          params: {
+            countrycodes: 'kg',
+          },
+        });
+        const results = await provider.search({ query: values.address });
+        if (results && results.length > 0) {
+          lat = results[0].y;
+          lng = results[0].x;
+          message.info(`Координаты обновлены по адресу: ${results[0].label}`);
+        }
+      }
+
+      const payload = {
+        ...values,
+        lat: parseFloat(lat),
+        lng: parseFloat(lng),
+        totalAmount: parseFloat(values.totalAmount),
+      };
+      const res = await api.patch(`/order/${id}`, payload);
+      const updatedOrder = res.data;
+      setOrder(updatedOrder);
+      form.setFieldsValue(updatedOrder);
       message.success("Заказ обновлен");
     } catch (err: any) {
       console.error(err);
-      message.error("Не удалось обновить заказ");
+      const errorMsg = err?.response?.data?.message || "Не удалось обновить заказ";
+      message.error(Array.isArray(errorMsg) ? errorMsg.join(", ") : errorMsg);
     } finally {
       setSaving(false);
     }
@@ -101,8 +159,9 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   label="Телефон"
                   name="phone"
                   rules={[{ required: true, message: "Введите телефон" }]}
+                  normalize={formatPhone}
                 >
-                  <Input />
+                  <Input placeholder="+996(555)662-999" />
                 </Form.Item>
               </Card>
 
@@ -137,10 +196,10 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                   <InputNumber
                     style={{ width: "100%" }}
                     formatter={(value) =>
-                      `₽ ${value}`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                      `${value} сом`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
                     }
                     parser={(value) => {
-                      const parsed = value?.replace(/₽\s?|(,*)/g, "") || "0";
+                      const parsed = value?.replace(/сом\s?|(,*)/g, "") || "0";
                       return Number(parsed);
                     }}
                   />

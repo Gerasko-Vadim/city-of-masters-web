@@ -36,7 +36,16 @@ type Props = {
   onChange: (lat: number, lng: number) => void;
 };
 
-const provider = new OpenStreetMapProvider();
+const provider = new OpenStreetMapProvider({
+  params: {
+    countrycodes: 'kg',
+  },
+});
+
+const KYRGYZ_BOUNDS: L.LatLngBoundsExpression = [
+  [39.1, 69.1], // Southwest
+  [43.3, 80.3], // Northeast
+];
 
 export default function LeafletMap({ value, onChange }: Props) {
   const [position, setPosition] = useState<[number, number] | null>(
@@ -49,20 +58,27 @@ export default function LeafletMap({ value, onChange }: Props) {
   // 🔍 Address search
   const search = async (q: string) => {
     if (!q) return setSuggestions([]);
-    const res = await provider.search({ query: q });
-    setSuggestions(res.slice(0, 5));
+    try {
+      const res = await provider.search({ query: q });
+      setSuggestions(res.slice(0, 5));
+    } catch (err) {
+      console.error("Search error:", err);
+    }
   };
 
   const debouncedSearch = debounce(search, 400);
 
-  // 🧭 Geolocation
+  // 🧭 Geolocation - restricted to KG
   useEffect(() => {
     if (value || position) return;
     navigator.geolocation?.getCurrentPosition((pos) => {
       const lat = pos.coords.latitude;
       const lng = pos.coords.longitude;
-      setPosition([lat, lng]);
-      onChange(lat, lng);
+      // Simple check if within KG (approximate)
+      if (lat > 39 && lat < 44 && lng > 69 && lng < 81) {
+        setPosition([lat, lng]);
+        onChange(lat, lng);
+      }
     });
   }, []);
 
@@ -84,12 +100,26 @@ export default function LeafletMap({ value, onChange }: Props) {
     return null;
   }
 
+  function ChangeView({ center }: { center: [number, number] }) {
+    const map = useMapEvents({});
+    useEffect(() => {
+      map.flyTo(center, map.getZoom());
+    }, [center, map]);
+    return null;
+  }
+
+  useEffect(() => {
+    if (value && (value.lat !== position?.[0] || value.lng !== position?.[1])) {
+       setPosition([value.lat, value.lng]);
+    }
+  }, [value]);
+
   return (
     <div className="space-y-2">
       {/* 🔍 Search */}
       <div className="relative" style={{ zIndex: 10000 }}>
         <Input
-          placeholder="Поиск адреса..."
+          placeholder="Поиск адреса в Кыргызстане..."
           value={query}
           onChange={(e) => {
             setQuery(e.target.value);
@@ -136,9 +166,12 @@ export default function LeafletMap({ value, onChange }: Props) {
         <MapContainer
           center={position || [42.8746, 74.5698]}
           zoom={14}
+          maxBounds={KYRGYZ_BOUNDS}
+          minZoom={6}
           style={{ height: "100%", borderRadius: 12 }}
         >
           <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
+          {position && <ChangeView center={position} />}
 
           <MapClickHandler />
 

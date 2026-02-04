@@ -11,6 +11,7 @@ import { API_PATH } from "../shared/api";
 export default function SpecialistsTable() {
   const [specialists, setSpecialists] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
+  const [now, setNow] = useState(new Date());
   const router = useRouter();
 
   const loadSpecialists = useCallback(async () => {
@@ -32,6 +33,8 @@ export default function SpecialistsTable() {
 
   useEffect(() => {
     loadSpecialists();
+    const interval = setInterval(() => setNow(new Date()), 60000);
+    return () => clearInterval(interval);
   }, [loadSpecialists]);
 
   useEffect(() => {
@@ -48,10 +51,33 @@ export default function SpecialistsTable() {
       }
     });
 
+    socket.on("specialistUpdate", (updatedSpec: any) => {
+      setSpecialists(prev => prev.map(s => {
+        if (s.id === updatedSpec.id) {
+          return { ...s, ...updatedSpec };
+        }
+        return s;
+      }));
+    });
+
     return () => {
       socket.disconnect();
     };
   }, []);
+
+  const formatDuration = (start: string | Date | null) => {
+    if (!start) return "-";
+    const startTime = new Date(start).getTime();
+    const diffMs = now.getTime() - startTime;
+    if (diffMs < 0) return "0м";
+
+    const diffMins = Math.floor(diffMs / 60000);
+    const hours = Math.floor(diffMins / 60);
+    const mins = diffMins % 60;
+
+    if (hours > 0) return `${hours}ч ${mins}м`;
+    return `${mins}м`;
+  };
 
   return (
     <>
@@ -74,20 +100,19 @@ export default function SpecialistsTable() {
           dataIndex: "username",
           render: (username: string) => username ? <a href={`https://t.me/${username}`} target="_blank" rel="noopener noreferrer">@{username}</a> : '-' 
         },
-        { title: "Telegram ID", dataIndex: "telegramId" },
         { 
           title: "Статус", 
           dataIndex: "isOnShift",
           render: (val: boolean) => val ? <Tag color="green">На смене</Tag> : <Tag color="default">Не на смене</Tag>
         },
-        { 
-          title: "Локация", 
-          render: (_, record: any) => record.lat ? `${record.lat.toFixed(4)}, ${record.lng.toFixed(4)}` : '-'
+        {
+          title: "Начало смены",
+          dataIndex: "lastShiftStartedAt",
+          render: (date: string, record: any) => record.isOnShift && date ? new Date(date).toLocaleTimeString("ru-RU", { hour: '2-digit', minute: '2-digit' }) : '-'
         },
         {
-          title: "Дата регистрации",
-          dataIndex: "createdAt",
-          render: (date: string) => new Date(date).toLocaleDateString("ru-RU") 
+          title: "В работе",
+          render: (_, record: any) => record.isOnShift ? formatDuration(record.lastShiftStartedAt) : '-'
         }
       ]}
       onRow={(record: any) => {

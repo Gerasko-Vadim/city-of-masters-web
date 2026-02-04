@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { useRouter } from "next/navigation";
 import OrdersTable from "./components/OrdersTable";
 import SpecialistsTable from "./components/SpecialistsTable";
+import GlobalMap from "./components/GlobalMap";
 
 const { Title } = Typography;
 
@@ -33,6 +34,11 @@ export default function DashboardPage() {
              key: 'specialists',
              label: 'Специалисты',
              children: <SpecialistsTable />,
+           },
+           {
+             key: 'map',
+             label: 'Карта',
+             children: <GlobalMap />,
            },
          ]}
        />

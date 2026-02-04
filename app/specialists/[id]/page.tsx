@@ -7,6 +7,8 @@ import { Button, Card, Table, Tag, Typography, Spin, message } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { mapOrderStatusToLabel } from "../../orders/lib";
 import ChatBox from "../../components/ChatBox";
+import { io } from "socket.io-client";
+import { API_PATH } from "../../shared/api";
 
 const { Title, Text } = Typography;
 
@@ -53,6 +55,38 @@ export default function SpecialistDetailPage({ params }: { params: Promise<{ id:
       }
     };
     if (id) fetchSpecialist();
+  }, [id]);
+
+  useEffect(() => {
+    const socket = io(API_PATH, { transports: ["websocket", "polling"] });
+
+    socket.on("specialistUpdate", (updatedSpec: any) => {
+      if (updatedSpec.id === Number(id)) {
+        setSpecialist(prev => ({ ...prev, ...updatedSpec }));
+      }
+    });
+
+    socket.on("orderUpdate", (updatedOrder: any) => {
+      // If the update is for the specialist's active order, or relates to them
+      setSpecialist(prev => {
+        if (!prev) return prev;
+        
+        // Update active order if it matches
+        let newActiveOrder = prev.activeOrder;
+        if (prev.activeOrder && prev.activeOrder.id === updatedOrder.id) {
+          newActiveOrder = updatedOrder;
+        }
+
+        // Update orders history if it exists
+        const newOrders = prev.orders?.map((o: any) => o.id === updatedOrder.id ? updatedOrder : o);
+
+        return { ...prev, activeOrder: newActiveOrder, orders: newOrders };
+      });
+    });
+
+    return () => {
+      socket.disconnect();
+    };
   }, [id]);
 
   if (loading) return <Spin className="flex justify-center mt-10" />;
@@ -123,7 +157,7 @@ export default function SpecialistDetailPage({ params }: { params: Promise<{ id:
                 { title: "ID", dataIndex: "id", width: 60 },
                 { title: "Клиент", dataIndex: "customerName" },
                 { title: "Адрес", dataIndex: "address" },
-                { title: "Сумма", dataIndex: "totalAmount", render: (v: number) => `${v} ₽` },
+                { title: "Сумма", dataIndex: "totalAmount", render: (v: number) => `${v} сом` },
                 { 
                   title: "Статус", 
                   dataIndex: "status",

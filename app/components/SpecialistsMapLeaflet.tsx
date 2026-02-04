@@ -34,6 +34,11 @@ type Props = {
   specialists: Specialist[];
 };
 
+const KYRGYZ_BOUNDS: L.LatLngBoundsExpression = [
+  [39.1, 69.1], // Southwest
+  [43.3, 80.3], // Northeast
+];
+
 export default function SpecialistsMapLeaflet({ specialists }: Props) {
   const [center, setCenter] = useState<[number, number]>([42.8746, 74.5698]);
 
@@ -49,6 +54,8 @@ export default function SpecialistsMapLeaflet({ specialists }: Props) {
       <MapContainer
         center={center}
         zoom={13}
+        maxBounds={KYRGYZ_BOUNDS}
+        minZoom={6}
         style={{ height: "100%", borderRadius: 12, border: "1px solid #ddd" }}
       >
         <TileLayer url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png" />
