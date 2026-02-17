@@ -123,6 +123,7 @@ export default function SpecialistsTable() {
           style: { cursor: "pointer" },
         };
       }}
+      rowClassName={(record) => record.isBanned ? "bg-red-50 hover:!bg-red-100" : ""}
     />
 
     <div style={{ marginTop: 40 }}>
