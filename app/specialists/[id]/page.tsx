@@ -18,6 +18,7 @@ export default function SpecialistDetailPage({ params }: { params: Promise<{ id:
   const [specialist, setSpecialist] = useState<any>(null);
   const [loading, setLoading] = useState(true);
   const [activeOrderDuration, setActiveOrderDuration] = useState("");
+  const [banLoading, setBanLoading] = useState(false);
 
   useEffect(() => {
     let interval: NodeJS.Timeout;
@@ -88,6 +89,20 @@ export default function SpecialistDetailPage({ params }: { params: Promise<{ id:
       socket.disconnect();
     };
   }, [id]);
+  
+  const handleBan = async () => {
+    setBanLoading(true);
+    try {
+      const newStatus = !specialist.isBanned;
+      await api.patch(`/specialists/${id}/ban`, { isBanned: newStatus });
+      setSpecialist((prev: any) => ({ ...prev, isBanned: newStatus }));
+      message.success(newStatus ? "Специалист заблокирован" : "Специалист разблокирован");
+    } catch (err) {
+      message.error("Не удалось изменить статус блокировки");
+    } finally {
+      setBanLoading(false);
+    }
+  };
 
   if (loading) return <Spin className="flex justify-center mt-10" />;
   if (!specialist) return <div>Специалист не найден</div>;
@@ -105,9 +120,20 @@ export default function SpecialistDetailPage({ params }: { params: Promise<{ id:
               <Title level={2}>{specialist.name || `Специалист #${specialist.id}`}</Title>
               <Text type="secondary">Telegram ID: {specialist.telegramId}</Text>
             </div>
-            <Tag color={specialist.isOnShift ? "green" : "default"}>
-              {specialist.isOnShift ? "На смене" : "Не на смене"}
-            </Tag>
+            <div className="flex items-center gap-2">
+              {specialist.isBanned && <Tag color="error">Заблокирован</Tag>}
+              <Tag color={specialist.isOnShift ? "green" : "default"}>
+                {specialist.isOnShift ? "На смене" : "Не на смене"}
+              </Tag>
+              <Button 
+                danger={!specialist.isBanned}
+                type={specialist.isBanned ? "default" : "primary"}
+                onClick={handleBan}
+                loading={banLoading}
+              >
+                {specialist.isBanned ? "Разблокировать" : "Заблокировать"}
+              </Button>
+            </div>
           </div>
 
       {specialist.activeOrder && (
