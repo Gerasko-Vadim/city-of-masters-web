@@ -209,6 +209,23 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                     }}
                   />
                 </Form.Item>
+
+                <Form.Item
+                  label="Комиссия"
+                  name="commission"
+                  rules={[{ required: true, message: "Введите комиссию" }]}
+                >
+                  <InputNumber
+                    style={{ width: "100%" }}
+                    formatter={(value) =>
+                      `${value} сом`.replace(/\B(?=(\d{3})+(?!\d))/g, ",")
+                    }
+                    parser={(value) => {
+                      const parsed = value?.replace(/сом\s?|(,*)/g, "") || "0";
+                      return Number(parsed);
+                    }}
+                  />
+                </Form.Item>
               </Card>
             </div>
 

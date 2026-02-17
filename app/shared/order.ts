@@ -7,6 +7,7 @@ export interface CreateOrderDto {
   assignedSpecialistId?: number;
   lat: number;
   lng: number;
+  commission?: number;
 }
 
 export enum OrderStatus {
@@ -26,4 +27,5 @@ export const mapOrderStatusToLabel = {
 export interface Order extends CreateOrderDto {
   id: number;
   status: OrderStatus;
+  commission: number;
 }

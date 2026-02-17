@@ -128,6 +128,11 @@ export default function OrdersTable() {
              dataIndex: "totalAmount",
              render: (val: number) => `${val} сом`
           },
+          { 
+            title: "Комиссия", 
+            dataIndex: "commission",
+            render: (val: number) => `${val || 0} сом`
+         },
           {
             title: "Статус",
             dataIndex: "status",
