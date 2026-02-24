@@ -134,6 +134,15 @@ export default function OrdersTable() {
             render: (val: number) => `${val || 0} сом`
          },
           {
+            title: "Источник",
+            dataIndex: "source",
+            render: (source: string) => (
+              <Tag color={source === "ADMIN" ? "purple" : "blue"}>
+                {source === "ADMIN" ? "Админка" : "Клиент"}
+              </Tag>
+            ),
+          },
+          {
             title: "Статус",
             dataIndex: "status",
             render: (status: OrderStatus, record: any) => {

@@ -57,6 +57,7 @@ export default function CreateOrderModal({ open, onClose, onCreated }: Props) {
         lat: lat ? parseFloat(lat.toString()) : undefined,
         lng: lng ? parseFloat(lng.toString()) : undefined,
         commission: values.commission ? parseFloat(values.commission.toString()) : calculateCommission(values.totalAmount),
+        source: 'ADMIN'
       });
       message.success("Заказ создан");
       form.resetFields();

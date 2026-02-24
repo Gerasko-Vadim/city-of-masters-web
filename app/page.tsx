@@ -7,6 +7,7 @@ import dynamic from "next/dynamic";
 
 const OrdersTable = dynamic(() => import("./components/OrdersTable"), { ssr: false });
 const SpecialistsTable = dynamic(() => import("./components/SpecialistsTable"), { ssr: false });
+const ClientsTable = dynamic(() => import("./components/ClientsTable"), { ssr: false });
 const GlobalMap = dynamic(() => import("./components/GlobalMap"), { ssr: false });
 
 const { Title } = Typography;
@@ -36,6 +37,11 @@ export default function DashboardPage() {
              key: 'specialists',
              label: 'Специалисты',
              children: <SpecialistsTable />,
+           },
+           {
+             key: 'clients',
+             label: 'Клиенты',
+             children: <ClientsTable />,
            },
            {
              key: 'map',
