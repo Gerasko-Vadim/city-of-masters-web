@@ -1,6 +1,6 @@
 "use client";
 
-import { Table, Tag } from "antd";
+import { Table, Tag, Space } from "antd";
 import { useEffect, useState } from "react";
 import { api } from "../shared";
 import dayjs from "dayjs";
@@ -45,10 +45,15 @@ export default function ClientsTable() {
       key: "phone",
     },
     {
-      title: "Telegram ID",
-      dataIndex: "telegramId",
-      key: "telegramId",
-      render: (text: string) => <Tag>{text}</Tag>,
+      title: "Статус",
+      key: "alerts",
+      render: (_: any, record: any) => (
+        <Space>
+          {record.hasNewOrder && <Tag color="gold">Новый заказ</Tag>}
+          {record.unreadCount > 0 && <Tag color="red">Сообщений: {record.unreadCount}</Tag>}
+          {!record.hasNewOrder && record.unreadCount === 0 && <Tag color="default">Ок</Tag>}
+        </Space>
+      ),
     },
     {
       title: "Дата регистрации",
@@ -64,9 +69,12 @@ export default function ClientsTable() {
       columns={columns}
       rowKey="id"
       loading={loading}
-      onRow={(record) => ({
+      onRow={(record: any) => ({
         onClick: () => router.push(`/clients/${record.id}`),
-        style: { cursor: 'pointer' }
+        style: { 
+          cursor: 'pointer',
+          backgroundColor: record.unreadCount > 0 ? '#fff1f0' : (record.hasNewOrder ? '#fffbe6' : 'inherit')
+        }
       })}
     />
   );

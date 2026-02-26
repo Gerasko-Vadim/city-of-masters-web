@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Table, Card, Descriptions, Tag, Typography, Button, Space, message, Tabs } from "antd";
+import { Table, Card, Descriptions, Tag, Typography, Button, Space, message, Tabs, Select } from "antd";
 import { ArrowLeftOutlined } from "@ant-design/icons";
 import { api } from "../../shared";
 import dayjs from "dayjs";
@@ -36,6 +36,19 @@ export default function ClientDetailPage() {
   if (loading) return <div className="p-6">Загрузка...</div>;
   if (!client) return <div className="p-6">Клиент не найден</div>;
 
+  const handleStatusChange = async (orderId: number, newStatus: OrderStatus) => {
+    try {
+      await api.patch(`/order/${orderId}`, { status: newStatus });
+      message.success("Статус заказа обновлен");
+      // Refresh client data to show updated status
+      const res = await api.get(`/clients/${id}`);
+      setClient(res.data);
+    } catch (err) {
+      message.error("Не удалось обновить статус заказа");
+      console.error(err);
+    }
+  };
+
   const orderColumns = [
     {
       title: "ID",
@@ -58,10 +71,18 @@ export default function ClientDetailPage() {
       title: "Статус",
       dataIndex: "status",
       key: "status",
-      render: (status: OrderStatus) => (
-        <Tag color={status === OrderStatus.PAID ? "gold" : status === OrderStatus.COMPLETED ? "green" : "blue"}>
-          {mapOrderStatusToLabel[status] || status}
-        </Tag>
+      render: (status: OrderStatus, record: any) => (
+        <div onClick={(e) => e.stopPropagation()}>
+          <Select
+            value={status}
+            onChange={(value: OrderStatus) => handleStatusChange(record.id, value)}
+            style={{ width: 130 }}
+            options={Object.values(OrderStatus).map(s => ({
+              value: s,
+              label: mapOrderStatusToLabel[s] || s
+            }))}
+          />
+        </div>
       ),
     },
     {
