@@ -4,8 +4,10 @@ import { Table, Tag } from "antd";
 import { useEffect, useState } from "react";
 import { api } from "../shared";
 import dayjs from "dayjs";
+import { useRouter } from "next/navigation";
 
 export default function ClientsTable() {
+  const router = useRouter();
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
 
@@ -62,6 +64,10 @@ export default function ClientsTable() {
       columns={columns}
       rowKey="id"
       loading={loading}
+      onRow={(record) => ({
+        onClick: () => router.push(`/clients/${record.id}`),
+        style: { cursor: 'pointer' }
+      })}
     />
   );
 }

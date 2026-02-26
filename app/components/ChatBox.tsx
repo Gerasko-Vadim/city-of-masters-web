@@ -11,30 +11,44 @@ const { Text } = Typography;
 type Message = {
   id: number;
   text: string;
-  senderType: "SPECIALIST" | "OPERATOR";
+  senderType: "SPECIALIST" | "OPERATOR" | "CLIENT";
   createdAt: string;
 };
 
 type Props = {
   orderId?: number;
   specialistId?: number;
+  clientId?: number;
   title?: string;
 };
 
-export default function ChatBox({ orderId, specialistId, title = "Чат со специалистом" }: Props) {
+export default function ChatBox({ orderId, specialistId, clientId, title = "Чат" }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Determine the endpoint and socket event based on props
-    const fetchUrl = orderId ? `/chat/${orderId}` : `/chat/specialist/${specialistId}`;
-    const socketEvent = orderId ? `chat_${orderId}` : `chat_specialist_${specialistId}`;
+    let fetchUrl = "";
+    let socketEvent = "";
 
-    // Load history
-    api.get(fetchUrl).then((res) => {
-      setMessages(res.data);
-    });
+    if (orderId) {
+      fetchUrl = `/chat/${orderId}`;
+      socketEvent = `chat_${orderId}`;
+    } else if (specialistId) {
+      fetchUrl = `/chat/specialist/${specialistId}`;
+      socketEvent = `chat_specialist_${specialistId}`;
+    } else if (clientId) {
+      fetchUrl = `/chat/client/${clientId}`;
+      socketEvent = `chat_client_${clientId}`;
+    }
+
+    if (fetchUrl) {
+      // Load history
+      api.get(fetchUrl).then((res) => {
+        setMessages(res.data);
+      });
+    }
 
     // Connect to WebSocket
     console.log("Connecting to WebSocket at", API_PATH);
@@ -56,7 +70,7 @@ export default function ChatBox({ orderId, specialistId, title = "Чат со с
     return () => {
       socket.disconnect();
     };
-  }, [orderId, specialistId]);
+  }, [orderId, specialistId, clientId]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -67,7 +81,7 @@ export default function ChatBox({ orderId, specialistId, title = "Чат со с
   const onSend = async () => {
     if (!inputValue.trim()) return;
     try {
-      await api.post("/chat/send", { orderId, specialistId, text: inputValue });
+      await api.post("/chat/send", { orderId, specialistId, clientId, text: inputValue });
       setInputValue("");
     } catch (err) {
       console.error(err);
@@ -96,7 +110,7 @@ export default function ChatBox({ orderId, specialistId, title = "Чат со с
                 color: item.senderType === "OPERATOR" ? "#fff" : "#000",
               }}>
                 <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 2 }}>
-                  {item.senderType === "OPERATOR" ? "Вы" : "Специалист"}
+                  {item.senderType === "OPERATOR" ? "Вы" : item.senderType === "CLIENT" ? "Клиент" : "Специалист"}
                 </div>
                 <div>{item.text}</div>
                 <div style={{ fontSize: 10, opacity: 0.6, textAlign: "right", marginTop: 4 }}>
