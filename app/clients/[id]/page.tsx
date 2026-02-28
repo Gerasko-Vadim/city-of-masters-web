@@ -10,7 +10,19 @@ import { mapOrderStatusToLabel } from "../../orders/lib";
 import { OrderStatus } from "../../shared/order";
 import ChatBox from "../../components/ChatBox";
 
-const { Title } = Typography;
+const statusColors: Record<string, string> = {
+  [OrderStatus.NEW]: "blue",
+  [OrderStatus.PAID]: "gold",
+  [OrderStatus.IN_PROGRESS]: "cyan",
+  [OrderStatus.COMPLETED]: "green",
+};
+
+const statusPriority: Record<string, number> = {
+  [OrderStatus.NEW]: 1,
+  [OrderStatus.PAID]: 2,
+  [OrderStatus.IN_PROGRESS]: 3,
+  [OrderStatus.COMPLETED]: 4,
+};
 
 export default function ClientDetailPage() {
   const { id } = useParams();
@@ -35,6 +47,13 @@ export default function ClientDetailPage() {
 
   if (loading) return <div className="p-6">Загрузка...</div>;
   if (!client) return <div className="p-6">Клиент не найден</div>;
+
+  const sortedOrders = [...(client.orders || [])].sort((a, b) => {
+    const priorityA = statusPriority[a.status] || 99;
+    const priorityB = statusPriority[b.status] || 99;
+    if (priorityA !== priorityB) return priorityA - priorityB;
+    return b.id - a.id;
+  });
 
   const handleStatusChange = async (orderId: number, newStatus: OrderStatus) => {
     try {
@@ -72,7 +91,10 @@ export default function ClientDetailPage() {
       dataIndex: "status",
       key: "status",
       render: (status: OrderStatus, record: any) => (
-        <div onClick={(e) => e.stopPropagation()}>
+        <div onClick={(e) => e.stopPropagation()} className="flex items-center gap-2">
+          <Tag color={statusColors[status] || "default"}>
+            {mapOrderStatusToLabel[status] || status}
+          </Tag>
           <Select
             value={status}
             onChange={(value: OrderStatus) => handleStatusChange(record.id, value)}
@@ -117,7 +139,7 @@ export default function ClientDetailPage() {
 
           <Card title="История заказов">
             <Table 
-              dataSource={client.orders} 
+              dataSource={sortedOrders} 
               columns={orderColumns} 
               rowKey="id" 
               onRow={(record: any) => ({

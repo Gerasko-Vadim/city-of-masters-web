@@ -11,6 +11,7 @@ const { Text } = Typography;
 type Message = {
   id: number;
   text: string;
+  imageUrl?: string;
   senderType: "SPECIALIST" | "OPERATOR" | "CLIENT";
   createdAt: string;
 };
@@ -113,6 +114,17 @@ export default function ChatBox({ orderId, specialistId, clientId, title = "Ча
                   {item.senderType === "OPERATOR" ? "Вы" : item.senderType === "CLIENT" ? "Клиент" : "Специалист"}
                 </div>
                 <div>{item.text}</div>
+                {item.imageUrl && (
+                  <div style={{ marginTop: 8 }}>
+                    <a href={item.imageUrl} target="_blank" rel="noopener noreferrer">
+                      <img 
+                        src={item.imageUrl} 
+                        alt="attachment" 
+                        style={{ maxWidth: "100%", borderRadius: 8, cursor: "pointer" }}
+                      />
+                    </a>
+                  </div>
+                )}
                 <div style={{ fontSize: 10, opacity: 0.6, textAlign: "right", marginTop: 4 }}>
                   {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </div>
