@@ -116,9 +116,9 @@ export default function ChatBox({ orderId, specialistId, clientId, title = "Ча
                 <div>{item.text}</div>
                 {item.imageUrl && (
                   <div style={{ marginTop: 8 }}>
-                    <a href={item.imageUrl} target="_blank" rel="noopener noreferrer">
+                    <a href={item.imageUrl.startsWith('/') ? `${API_PATH}${item.imageUrl}` : item.imageUrl} target="_blank" rel="noopener noreferrer">
                       <img 
-                        src={item.imageUrl} 
+                        src={item.imageUrl.startsWith('/') ? `${API_PATH}${item.imageUrl}` : item.imageUrl} 
                         alt="attachment" 
                         style={{ maxWidth: "100%", borderRadius: 8, cursor: "pointer" }}
                       />
