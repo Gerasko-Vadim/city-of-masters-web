@@ -10,6 +10,14 @@ export default function ClientsTable() {
   const router = useRouter();
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [currentPage, setCurrentPage] = useState<number>(1);
+
+  useEffect(() => {
+    const savedPage = sessionStorage.getItem("clients_page");
+    if (savedPage) {
+      setCurrentPage(parseInt(savedPage, 10));
+    }
+  }, []);
 
   const fetchClients = async () => {
     try {
@@ -69,6 +77,13 @@ export default function ClientsTable() {
       columns={columns}
       rowKey="id"
       loading={loading}
+      pagination={{
+        current: currentPage,
+        onChange: (page) => {
+          setCurrentPage(page);
+          sessionStorage.setItem("clients_page", page.toString());
+        }
+      }}
       onRow={(record: any) => ({
         onClick: () => router.push(`/clients/${record.id}`),
         style: { 

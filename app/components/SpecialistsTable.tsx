@@ -1,17 +1,19 @@
 "use client";
 
-import { Table, Tag, message, Badge } from "antd";
+import { Table, Tag, Switch, Space, message, Button, Badge } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "../shared";
 import SpecialistsMap from "./SpecialistsMap";
 import { io } from "socket.io-client";
 import { API_PATH } from "../shared/api";
+import BroadcastModal from "./BroadcastModal";
 
 export default function SpecialistsTable() {
   const [specialists, setSpecialists] = useState<any[]>([]);
   const [loading, setLoading] = useState(false);
   const [now, setNow] = useState(new Date());
+  const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
   const router = useRouter();
 
   const loadSpecialists = useCallback(async () => {
@@ -81,6 +83,16 @@ export default function SpecialistsTable() {
 
   return (
     <>
+    <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
+      <Button 
+        type="primary" 
+        onClick={() => setIsBroadcastModalOpen(true)}
+        style={{ background: '#212121' }}
+      >
+        Рассылка мастерам
+      </Button>
+    </div>
+
     <Table
       loading={loading}
       rowKey="id"
@@ -130,6 +142,11 @@ export default function SpecialistsTable() {
       <h3 style={{ marginBottom: 16 }}>Карта специалистов</h3>
       <SpecialistsMap specialists={specialists} />
     </div>
+
+    <BroadcastModal 
+      open={isBroadcastModalOpen} 
+      onClose={() => setIsBroadcastModalOpen(false)} 
+    />
     </>
   );
 }
