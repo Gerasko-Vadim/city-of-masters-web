@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Input, Button, Card, List, Typography, Space } from "antd";
+import { Input, Button, Card, List, Typography, Space, Spin, Alert, message } from "antd";
 import { SendOutlined } from "@ant-design/icons";
 import { io } from "socket.io-client";
 import { api, API_PATH } from "../shared/api";
@@ -26,6 +26,8 @@ type Props = {
 export default function ChatBox({ orderId, specialistId, clientId, title = "Чат" }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -45,10 +47,14 @@ export default function ChatBox({ orderId, specialistId, clientId, title = "Ча
     }
 
     if (fetchUrl) {
-      // Load history
-      api.get(fetchUrl).then((res) => {
-        setMessages(res.data);
-      });
+      setHistoryLoading(true);
+      setHistoryError(false);
+      api.get(fetchUrl)
+        .then((res) => {
+          setMessages(Array.isArray(res.data) ? res.data : []);
+        })
+        .catch(() => setHistoryError(true))
+        .finally(() => setHistoryLoading(false));
     }
 
     // Connect to WebSocket
@@ -85,16 +91,27 @@ export default function ChatBox({ orderId, specialistId, clientId, title = "Ча
       await api.post("/chat/send", { orderId, specialistId, clientId, text: inputValue });
       setInputValue("");
     } catch (err) {
-      console.error(err);
+      message.error("Не удалось отправить сообщение");
     }
   };
 
   return (
     <Card title={title} bordered={false}>
-      <div 
+      <div
         ref={scrollRef}
         style={{ height: 600, overflowY: "auto", marginBottom: 16, border: "1px solid #f0f0f0", padding: 12, borderRadius: 8 }}
       >
+        {historyLoading && (
+          <div style={{ display: "flex", justifyContent: "center", padding: 40 }}>
+            <Spin tip="Загрузка сообщений..." />
+          </div>
+        )}
+        {historyError && (
+          <Alert message="Не удалось загрузить историю чата" type="error" showIcon style={{ marginBottom: 12 }} />
+        )}
+        {!historyLoading && !historyError && messages.length === 0 && (
+          <div style={{ textAlign: "center", color: "#999", padding: 40 }}>Нет сообщений</div>
+        )}
         <List
           dataSource={messages}
           renderItem={(item) => (
@@ -116,11 +133,12 @@ export default function ChatBox({ orderId, specialistId, clientId, title = "Ча
                 <div>{item.text}</div>
                 {item.imageUrl && (
                   <div style={{ marginTop: 8 }}>
-                    <a href={item.imageUrl.startsWith('/') ? `${API_PATH}${item.imageUrl}` : item.imageUrl} target="_blank" rel="noopener noreferrer">
-                      <img 
-                        src={item.imageUrl.startsWith('/') ? `${API_PATH}${item.imageUrl}` : item.imageUrl} 
-                        alt="attachment" 
+                    <a href={item.imageUrl.startsWith('/') ? `${API_PATH.replace(/\/$/, '')}${item.imageUrl}` : item.imageUrl} target="_blank" rel="noopener noreferrer">
+                      <img
+                        src={item.imageUrl.startsWith('/') ? `${API_PATH.replace(/\/$/, '')}${item.imageUrl}` : item.imageUrl}
+                        alt="attachment"
                         style={{ maxWidth: "100%", borderRadius: 8, cursor: "pointer" }}
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
                       />
                     </a>
                   </div>

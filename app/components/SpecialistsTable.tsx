@@ -46,7 +46,7 @@ export default function SpecialistsTable() {
       if (data.type === "CHAT_MESSAGE") {
         setSpecialists(prev => prev.map(s => {
           if (s.id === data.specialistId) {
-            return { ...s, unreadCount: (s.unreadCount || 0) + 1 };
+            return { ...s, unreadCount: (parseInt(String(s.unreadCount || 0), 10)) + 1 };
           }
           return s;
         }));
@@ -56,7 +56,11 @@ export default function SpecialistsTable() {
     socket.on("specialistUpdate", (updatedSpec: any) => {
       setSpecialists(prev => prev.map(s => {
         if (s.id === updatedSpec.id) {
-          return { ...s, ...updatedSpec };
+          return {
+            ...s,
+            ...updatedSpec,
+            unreadCount: parseInt(String(updatedSpec.unreadCount ?? s.unreadCount ?? 0), 10),
+          };
         }
         return s;
       }));

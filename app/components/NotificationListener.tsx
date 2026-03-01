@@ -14,8 +14,8 @@ export default function NotificationListener() {
     const socket = io(API_PATH, { transports: ["websocket", "polling"] });
 
     const playSound = () => {
-      const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3");
-      audio.play().catch(err => console.error("Failed to play sound:", err));
+      const audio = new Audio("/notification.mp3");
+      audio.play().catch(() => {/* autoplay blocked or file missing */});
     };
 
     socket.on("admin_notification", (data: any) => {
@@ -29,7 +29,7 @@ export default function NotificationListener() {
           icon: <MessageOutlined style={{ color: "#1890ff" }} />,
           onClick: () => {
             if (data.specialistId) router.push(`/specialists/${data.specialistId}`);
-            if (data.clientId) router.push(`/clients/${data.clientId}`);
+            else if (data.clientId) router.push(`/clients/${data.clientId}`);
           },
           duration: 5,
         });
