@@ -2,14 +2,18 @@
 
 import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
+import Link from "next/link";
+import dynamic from "next/dynamic";
 import { api } from "../../shared";
 import { Order, OrderStatus } from "../../shared/order";
 import { Button, Card, Form, Input, InputNumber, Select, message, Spin, Typography, Tag } from "antd";
-import { ArrowLeftOutlined, SaveOutlined, UserOutlined, PhoneOutlined } from "@ant-design/icons";
+import { ArrowLeftOutlined, SaveOutlined, UserOutlined, PhoneOutlined, LinkOutlined } from "@ant-design/icons";
 import { MapPicker } from "../MapPicker";
 import { mapOrderStatusToLabel } from "../lib";
 import { io } from "socket.io-client";
 import { API_PATH } from "../../shared";
+
+const OrderTrackMap = dynamic(() => import("../OrderTrackMap"), { ssr: false });
 
 
 
@@ -234,7 +238,14 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 title={<span>👷 Мастер</span>}
                 className="mt-6"
                 bordered={false}
-                extra={<Tag color="processing">В работе</Tag>}
+                extra={
+                  <div className="flex items-center gap-3">
+                    <Tag color="processing">В работе</Tag>
+                    <Link href={`/specialists/${order.assignedSpecialist.id}`}>
+                      <Button size="small" icon={<LinkOutlined />}>Профиль мастера</Button>
+                    </Link>
+                  </div>
+                }
               >
                 <div className="flex flex-col gap-2">
                   <div className="flex items-center gap-2">
@@ -260,6 +271,20 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                       Начал работу: {new Date(order.startedAt).toLocaleString('ru-RU')}
                     </div>
                   )}
+                </div>
+
+                <div className="mt-4">
+                  <OrderTrackMap
+                    orderLat={order.lat}
+                    orderLng={order.lng}
+                    specialistLat={order.assignedSpecialist.lat}
+                    specialistLng={order.assignedSpecialist.lng}
+                    specialistName={order.assignedSpecialist.name}
+                  />
+                  <div className="flex gap-4 mt-2 text-sm text-gray-500">
+                    <span>📍 Красный — заказ</span>
+                    <span>👷 Зелёный — мастер</span>
+                  </div>
                 </div>
               </Card>
             )}

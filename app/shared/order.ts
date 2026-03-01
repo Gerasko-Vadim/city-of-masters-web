@@ -25,10 +25,13 @@ export const mapOrderStatusToLabel = {
 };
 
 export interface AssignedSpecialist {
+  id: number;
   telegramId: string;
   name: string;
   username?: string;
   phone?: string;
+  lat?: number;
+  lng?: number;
 }
 
 export interface Order extends CreateOrderDto {
