@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, use } from "react";
-import { useParams, useRouter } from "next/navigation";
+import { useRouter } from "next/navigation";
 import { api } from "../../shared";
 import { Order, OrderStatus } from "../../shared/order";
 import { Button, Card, Form, Input, InputNumber, Select, message, Spin, Typography } from "antd";

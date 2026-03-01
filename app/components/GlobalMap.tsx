@@ -82,7 +82,12 @@ export default function GlobalMap() {
     const DG = require("2gis-maps");
 
     const savedPosStr = localStorage.getItem("global_map_pos");
-    const savedPos = savedPosStr ? JSON.parse(savedPosStr) : null;
+    let savedPos = null;
+    try {
+      savedPos = savedPosStr ? JSON.parse(savedPosStr) : null;
+    } catch {
+      localStorage.removeItem("global_map_pos");
+    }
     
     const initialCenter = savedPos?.center || [42.8746, 74.5698];
     const initialZoom = savedPos?.zoom || 13;
