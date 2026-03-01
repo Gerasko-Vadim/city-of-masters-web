@@ -35,10 +35,8 @@ export interface Order extends CreateOrderDto {
   id: number;
   status: OrderStatus;
   commission: number;
-  assignedSpecialistId?: string;
   assignedSpecialist?: AssignedSpecialist;
   startedAt?: string;
   completedAt?: string;
   createdAt?: string;
-  description?: string;
 }
