@@ -4,8 +4,8 @@ import { useEffect, useState, use } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "../../shared";
 import { Order, OrderStatus } from "../../shared/order";
-import { Button, Card, Form, Input, InputNumber, Select, message, Spin, Typography } from "antd";
-import { ArrowLeftOutlined, SaveOutlined } from "@ant-design/icons";
+import { Button, Card, Form, Input, InputNumber, Select, message, Spin, Typography, Tag } from "antd";
+import { ArrowLeftOutlined, SaveOutlined, UserOutlined, PhoneOutlined } from "@ant-design/icons";
 import { MapPicker } from "../MapPicker";
 import { mapOrderStatusToLabel } from "../lib";
 import { io } from "socket.io-client";
@@ -228,6 +228,41 @@ export default function OrderDetailPage({ params }: { params: Promise<{ id: stri
                 </Form.Item>
               </Card>
             </div>
+
+            {order.assignedSpecialist && (
+              <Card
+                title={<span>👷 Мастер</span>}
+                className="mt-6"
+                bordered={false}
+                extra={<Tag color="processing">В работе</Tag>}
+              >
+                <div className="flex flex-col gap-2">
+                  <div className="flex items-center gap-2">
+                    <UserOutlined />
+                    <span className="font-semibold text-base">{order.assignedSpecialist.name}</span>
+                  </div>
+                  {order.assignedSpecialist.phone && (
+                    <div className="flex items-center gap-2 text-gray-500">
+                      <PhoneOutlined />
+                      <span>{order.assignedSpecialist.phone}</span>
+                    </div>
+                  )}
+                  {order.assignedSpecialist.username && (
+                    <div className="flex items-center gap-2 text-gray-500">
+                      <span>@{order.assignedSpecialist.username}</span>
+                    </div>
+                  )}
+                  <div className="flex items-center gap-2 text-gray-400 text-sm">
+                    <span>Telegram ID: {order.assignedSpecialist.telegramId}</span>
+                  </div>
+                  {order.startedAt && (
+                    <div className="text-gray-400 text-sm">
+                      Начал работу: {new Date(order.startedAt).toLocaleString('ru-RU')}
+                    </div>
+                  )}
+                </div>
+              </Card>
+            )}
 
             <Card title="Расположение" className="mt-6" bordered={false}>
               <Form.Item name="lat" hidden>
