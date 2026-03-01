@@ -100,7 +100,16 @@ export default function SpecialistsTable() {
     <Table
       loading={loading}
       rowKey="id"
-      dataSource={specialists}
+      dataSource={[...specialists].sort((a, b) => {
+        if (a.isOnShift && !b.isOnShift) return -1;
+        if (!a.isOnShift && b.isOnShift) return 1;
+        if (a.isOnShift && b.isOnShift) {
+          const aTime = a.lastShiftStartedAt ? new Date(a.lastShiftStartedAt).getTime() : 0;
+          const bTime = b.lastShiftStartedAt ? new Date(b.lastShiftStartedAt).getTime() : 0;
+          return aTime - bTime; // oldest start first = longest on shift
+        }
+        return 0;
+      })}
       columns={[
         { title: "ID", dataIndex: "id", width: 60 },
         { 
