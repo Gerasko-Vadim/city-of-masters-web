@@ -1,13 +1,9 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { Input } from "antd";
-import debounce from "lodash.debounce";
 import { OpenStreetMapProvider } from "leaflet-geosearch";
 import { getSpecialists } from "../shared";
 
-// 2GIS map requires manual script loading or using the package which often attaches to window.DG
-// Since we are using the '2gis-maps' npm package, it provides the DG global.
 declare const DG: any;
 
 type Props = {
@@ -15,11 +11,7 @@ type Props = {
   onChange: (lat: number, lng: number) => void;
 };
 
-const provider = new OpenStreetMapProvider({
-  params: {
-    countrycodes: 'kg',
-  },
-});
+const provider = new OpenStreetMapProvider({ params: { countrycodes: 'kg' } });
 
 const KYRGYZ_BOUNDS = [
   [39.1, 69.1], // Southwest
@@ -32,6 +24,27 @@ export default function TwoGisMap({ value, onChange }: Props) {
   const markerRef = useRef<any>(null);
   const [specialists, setSpecialists] = useState<any[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const [searchQuery, setSearchQuery] = useState('');
+  const [isSearching, setIsSearching] = useState(false);
+
+  const handleSearch = async () => {
+    if (!searchQuery.trim() || !mapRef.current || !markerRef.current) return;
+    setIsSearching(true);
+    try {
+      const results = await provider.search({ query: searchQuery });
+      if (results && results.length > 0) {
+        const lat = results[0].y;
+        const lng = results[0].x;
+        markerRef.current.setLatLng([lat, lng]);
+        mapRef.current.setView([lat, lng], 17);
+        onChange(lat, lng);
+      }
+    } catch (e) {
+      console.error('Search failed', e);
+    } finally {
+      setIsSearching(false);
+    }
+  };
 
   // Load specialists
   useEffect(() => {
@@ -145,9 +158,42 @@ export default function TwoGisMap({ value, onChange }: Props) {
 
   return (
     <div className="space-y-2">
-      <div 
-        ref={mapContainerRef} 
-        style={{ height: 400, width: "100%", borderRadius: 12, border: "1px solid #ddd" }} 
+      <div style={{ display: 'flex', gap: 8, marginBottom: 8 }}>
+        <input
+          type="text"
+          placeholder="Поиск адреса в Бишкеке..."
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          onKeyDown={(e) => { if (e.key === 'Enter') handleSearch(); }}
+          style={{
+            flex: 1,
+            padding: '6px 12px',
+            border: '1px solid #d9d9d9',
+            borderRadius: 6,
+            fontSize: 14,
+            outline: 'none',
+          }}
+        />
+        <button
+          onClick={handleSearch}
+          disabled={isSearching}
+          style={{
+            padding: '6px 16px',
+            background: '#1677ff',
+            color: '#fff',
+            border: 'none',
+            borderRadius: 6,
+            cursor: isSearching ? 'not-allowed' : 'pointer',
+            fontSize: 14,
+            opacity: isSearching ? 0.7 : 1,
+          }}
+        >
+          {isSearching ? '...' : 'Найти'}
+        </button>
+      </div>
+      <div
+        ref={mapContainerRef}
+        style={{ height: 400, width: "100%", borderRadius: 12, border: "1px solid #ddd" }}
       />
     </div>
   );

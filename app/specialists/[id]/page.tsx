@@ -168,7 +168,7 @@ export default function SpecialistDetailPage({ params }: { params: Promise<{ id:
             <Card title="Информация">
                 <p><strong>Username:</strong> {specialist.username ? <a href={`https://t.me/${specialist.username}`} target="_blank" rel="noopener noreferrer">@{specialist.username}</a> : 'Не указан'}</p>
                 <p><strong>Дата регистрации:</strong> {new Date(specialist.createdAt).toLocaleString()}</p>
-                <p><strong>Последняя локация:</strong> {specialist.lat ? `${specialist.lat.toFixed(6)}, ${specialist.lng.toFixed(6)}` : 'Неизвестно'}</p>
+                <p><strong>Последняя локация:</strong> {specialist.lat && specialist.lng ? `${specialist.lat.toFixed(6)}, ${specialist.lng.toFixed(6)}` : 'Неизвестно'}</p>
             </Card>
             <Card title="Статистика">
                 <p><strong>Всего заказов:</strong> {specialist.orders?.length || 0}</p>

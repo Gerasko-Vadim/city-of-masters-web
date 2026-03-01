@@ -29,21 +29,13 @@ type Props = {
 export default function CreateOrderModal({ open, onClose, onCreated }: Props) {
   const [form] = Form.useForm();
 
-  const calculateCommission = (amount: number) => {
-    return Math.max(500, Math.floor(amount * 0.15));
-  };
-
   const onFinish = async (values: CreateOrderDto) => {
     try {
       let { lat, lng } = values;
 
       if (values.address && (!lat || !lng)) {
         const { OpenStreetMapProvider } = await import("leaflet-geosearch");
-        const provider = new OpenStreetMapProvider({
-          params: {
-            countrycodes: 'kg',
-          },
-        });
+        const provider = new OpenStreetMapProvider({ params: { countrycodes: 'kg' } });
         const results = await provider.search({ query: values.address });
         if (results && results.length > 0) {
           lat = results[0].y;
@@ -56,7 +48,8 @@ export default function CreateOrderModal({ open, onClose, onCreated }: Props) {
         ...values,
         lat: lat ? parseFloat(lat.toString()) : undefined,
         lng: lng ? parseFloat(lng.toString()) : undefined,
-        commission: values.commission ? parseFloat(values.commission.toString()) : calculateCommission(values.totalAmount),
+        commission: 500,
+        source: 'ADMIN',
       });
       message.success("Заказ создан");
       form.resetFields();
@@ -64,14 +57,6 @@ export default function CreateOrderModal({ open, onClose, onCreated }: Props) {
       onCreated();
     } catch (err: any) {
       message.error(err?.response?.data?.message || "Ошибка создания заказа");
-    }
-  };
-
-  const onValuesChange = (changedValues: any) => {
-    if (changedValues.totalAmount !== undefined) {
-      form.setFieldsValue({
-        commission: calculateCommission(changedValues.totalAmount),
-      });
     }
   };
 
@@ -83,7 +68,7 @@ export default function CreateOrderModal({ open, onClose, onCreated }: Props) {
       onOk={() => form.submit()}
       okText="Создать"
     >
-      <Form layout="vertical" form={form} onFinish={onFinish} onValuesChange={onValuesChange}>
+      <Form layout="vertical" form={form} onFinish={onFinish} initialValues={{ commission: 500 }}>
         <Form.Item
           label="Имя клиента"
           name="customerName"
@@ -150,26 +135,19 @@ export default function CreateOrderModal({ open, onClose, onCreated }: Props) {
         <Form.Item
           label="Комиссия"
           name="commission"
-          rules={[{ required: true }]}
-          extra="Минимум 500 сом или 15% от суммы"
         >
-          <InputNumber min={0} style={{ width: "100%" }} />
+          <InputNumber disabled style={{ width: "100%", color: "#595959" }} formatter={(v) => `${v} сом`} />
         </Form.Item>
 
         <div style={{ marginBottom: 16 }}>
           <div style={{ fontSize: 12, color: "#8c8c8c", marginBottom: 4 }}>Быстрый выбор цены:</div>
           <div style={{ display: "flex", flexWrap: "wrap", gap: 8 }}>
             {[5000, 8000, 10000, 15000, 20000, 25000, 30000].map((p) => (
-              <Tag 
-                key={p} 
+              <Tag
+                key={p}
                 color="blue"
                 style={{ cursor: "pointer" }}
-                onClick={() => {
-                  form.setFieldsValue({ 
-                    totalAmount: p,
-                    commission: calculateCommission(p)
-                  });
-                }}
+                onClick={() => form.setFieldsValue({ totalAmount: p })}
               >
                 {p} сом
               </Tag>

@@ -29,7 +29,15 @@ export default function OrdersTable() {
   const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
   const [activeTab, setActiveTab] = useState<string>("ALL");
+  const [currentPage, setCurrentPage] = useState<number>(1);
   const router = useRouter();
+
+  useEffect(() => {
+    const savedPage = sessionStorage.getItem("orders_page");
+    if (savedPage) {
+      setCurrentPage(parseInt(savedPage, 10));
+    }
+  }, []);
 
   const loadOrders = useCallback(async () => {
     setLoading(true);
@@ -118,6 +126,13 @@ export default function OrdersTable() {
         loading={loading}
         rowKey="id"
         dataSource={sortedAndFilteredOrders}
+        pagination={{
+          current: currentPage,
+          onChange: (page) => {
+            setCurrentPage(page);
+            sessionStorage.setItem("orders_page", page.toString());
+          }
+        }}
         columns={[
           { title: "ID", dataIndex: "id", width: 60 },
           { title: "Имя", dataIndex: "customerName" },
@@ -133,6 +148,15 @@ export default function OrdersTable() {
             dataIndex: "commission",
             render: (val: number) => `${val || 0} сом`
          },
+          {
+            title: "Источник",
+            dataIndex: "source",
+            render: (source: string) => (
+              <Tag color={source === "ADMIN" ? "purple" : "blue"}>
+                {source === "ADMIN" ? "Админка" : "Клиент"}
+              </Tag>
+            ),
+          },
           {
             title: "Статус",
             dataIndex: "status",

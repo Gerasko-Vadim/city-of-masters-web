@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useState, useRef } from "react";
-import { Input, Button, Card, List, Typography, Space } from "antd";
+import { Input, Button, Card, List, Typography, Space, Spin, Alert, message } from "antd";
 import { SendOutlined } from "@ant-design/icons";
 import { io } from "socket.io-client";
 import { api, API_PATH } from "../shared/api";
@@ -11,30 +11,51 @@ const { Text } = Typography;
 type Message = {
   id: number;
   text: string;
-  senderType: "SPECIALIST" | "OPERATOR";
+  imageUrl?: string;
+  senderType: "SPECIALIST" | "OPERATOR" | "CLIENT";
   createdAt: string;
 };
 
 type Props = {
   orderId?: number;
   specialistId?: number;
+  clientId?: number;
   title?: string;
 };
 
-export default function ChatBox({ orderId, specialistId, title = "Чат со специалистом" }: Props) {
+export default function ChatBox({ orderId, specialistId, clientId, title = "Чат" }: Props) {
   const [messages, setMessages] = useState<Message[]>([]);
   const [inputValue, setInputValue] = useState("");
+  const [historyLoading, setHistoryLoading] = useState(false);
+  const [historyError, setHistoryError] = useState(false);
   const scrollRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     // Determine the endpoint and socket event based on props
-    const fetchUrl = orderId ? `/chat/${orderId}` : `/chat/specialist/${specialistId}`;
-    const socketEvent = orderId ? `chat_${orderId}` : `chat_specialist_${specialistId}`;
+    let fetchUrl = "";
+    let socketEvent = "";
 
-    // Load history
-    api.get(fetchUrl).then((res) => {
-      setMessages(res.data);
-    });
+    if (orderId) {
+      fetchUrl = `/chat/${orderId}`;
+      socketEvent = `chat_${orderId}`;
+    } else if (specialistId) {
+      fetchUrl = `/chat/specialist/${specialistId}`;
+      socketEvent = `chat_specialist_${specialistId}`;
+    } else if (clientId) {
+      fetchUrl = `/chat/client/${clientId}`;
+      socketEvent = `chat_client_${clientId}`;
+    }
+
+    if (fetchUrl) {
+      setHistoryLoading(true);
+      setHistoryError(false);
+      api.get(fetchUrl)
+        .then((res) => {
+          setMessages(Array.isArray(res.data) ? res.data : []);
+        })
+        .catch(() => setHistoryError(true))
+        .finally(() => setHistoryLoading(false));
+    }
 
     // Connect to WebSocket
     console.log("Connecting to WebSocket at", API_PATH);
@@ -56,7 +77,7 @@ export default function ChatBox({ orderId, specialistId, title = "Чат со с
     return () => {
       socket.disconnect();
     };
-  }, [orderId, specialistId]);
+  }, [orderId, specialistId, clientId]);
 
   useEffect(() => {
     if (scrollRef.current) {
@@ -67,19 +88,30 @@ export default function ChatBox({ orderId, specialistId, title = "Чат со с
   const onSend = async () => {
     if (!inputValue.trim()) return;
     try {
-      await api.post("/chat/send", { orderId, specialistId, text: inputValue });
+      await api.post("/chat/send", { orderId, specialistId, clientId, text: inputValue });
       setInputValue("");
     } catch (err) {
-      console.error(err);
+      message.error("Не удалось отправить сообщение");
     }
   };
 
   return (
     <Card title={title} bordered={false}>
-      <div 
+      <div
         ref={scrollRef}
         style={{ height: 600, overflowY: "auto", marginBottom: 16, border: "1px solid #f0f0f0", padding: 12, borderRadius: 8 }}
       >
+        {historyLoading && (
+          <div style={{ display: "flex", justifyContent: "center", padding: 40 }}>
+            <Spin tip="Загрузка сообщений..." />
+          </div>
+        )}
+        {historyError && (
+          <Alert message="Не удалось загрузить историю чата" type="error" showIcon style={{ marginBottom: 12 }} />
+        )}
+        {!historyLoading && !historyError && messages.length === 0 && (
+          <div style={{ textAlign: "center", color: "#999", padding: 40 }}>Нет сообщений</div>
+        )}
         <List
           dataSource={messages}
           renderItem={(item) => (
@@ -96,9 +128,21 @@ export default function ChatBox({ orderId, specialistId, title = "Чат со с
                 color: item.senderType === "OPERATOR" ? "#fff" : "#000",
               }}>
                 <div style={{ fontSize: 12, opacity: 0.8, marginBottom: 2 }}>
-                  {item.senderType === "OPERATOR" ? "Вы" : "Специалист"}
+                  {item.senderType === "OPERATOR" ? "Вы" : item.senderType === "CLIENT" ? "Клиент" : "Специалист"}
                 </div>
                 <div>{item.text}</div>
+                {item.imageUrl && (
+                  <div style={{ marginTop: 8 }}>
+                    <a href={item.imageUrl.startsWith('/') ? `${API_PATH.replace(/\/$/, '')}${item.imageUrl}` : item.imageUrl} target="_blank" rel="noopener noreferrer">
+                      <img
+                        src={item.imageUrl.startsWith('/') ? `${API_PATH.replace(/\/$/, '')}${item.imageUrl}` : item.imageUrl}
+                        alt="attachment"
+                        style={{ maxWidth: "100%", borderRadius: 8, cursor: "pointer" }}
+                        onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                      />
+                    </a>
+                  </div>
+                )}
                 <div style={{ fontSize: 10, opacity: 0.6, textAlign: "right", marginTop: 4 }}>
                   {new Date(item.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                 </div>
