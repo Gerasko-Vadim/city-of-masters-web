@@ -1,8 +1,21 @@
+export const ORDER_CATEGORIES = [
+  'Сантехника',
+  'Электрика',
+  'Сборка мебели',
+  'Уборка',
+  'Ремонт техники',
+  'Покраска',
+  'Двери и замки',
+  'Грузчики',
+  'Другое',
+] as const;
+
 export interface CreateOrderDto {
   customerName: string;
   phone: string;
   address: string;
   totalAmount: number;
+  category: string;
   description?: string;
   assignedSpecialistId?: number;
   lat: number;

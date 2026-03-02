@@ -1,9 +1,9 @@
 "use client";
 
-import { Modal, Form, Input, InputNumber, message, Tag } from "antd";
+import { Modal, Form, Input, InputNumber, Select, message, Tag } from "antd";
 import { api } from "../shared";
 import { MapPicker } from "./MapPicker";
-import { CreateOrderDto } from "../shared/order";
+import { CreateOrderDto, ORDER_CATEGORIES } from "../shared/order";
 
 
 
@@ -68,7 +68,7 @@ export default function CreateOrderModal({ open, onClose, onCreated }: Props) {
       onOk={() => form.submit()}
       okText="Создать"
     >
-      <Form layout="vertical" form={form} onFinish={onFinish} initialValues={{ commission: 500 }}>
+      <Form layout="vertical" form={form} onFinish={onFinish} initialValues={{ commission: 500, category: 'Сантехника' }}>
         <Form.Item
           label="Имя клиента"
           name="customerName"
@@ -84,6 +84,18 @@ export default function CreateOrderModal({ open, onClose, onCreated }: Props) {
           normalize={formatPhone}
         >
           <Input placeholder="+996(555)662-999" />
+        </Form.Item>
+
+        <Form.Item
+          label="Тип работы"
+          name="category"
+          rules={[{ required: true, message: 'Выберите тип работы' }]}
+        >
+          <Select>
+            {ORDER_CATEGORIES.map((cat) => (
+              <Select.Option key={cat} value={cat}>{cat}</Select.Option>
+            ))}
+          </Select>
         </Form.Item>
 
         <Form.Item label="Описание" name="description">
