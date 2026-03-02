@@ -9,6 +9,7 @@ declare const DG: any;
 type Props = {
   value?: { lat: number; lng: number };
   onChange: (lat: number, lng: number) => void;
+  onAddressChange?: (address: string) => void;
 };
 
 const provider = new OpenStreetMapProvider({ params: { countrycodes: 'kg' } });
@@ -18,7 +19,22 @@ const KYRGYZ_BOUNDS = [
   [43.3, 80.3], // Northeast
 ];
 
-export default function TwoGisMap({ value, onChange }: Props) {
+async function reverseGeocode(lat: number, lng: number): Promise<string> {
+  try {
+    const res = await fetch(
+      `https://nominatim.openstreetmap.org/reverse?format=json&lat=${lat}&lon=${lng}&accept-language=ru`,
+      { headers: { 'User-Agent': 'CityOfMasters-Admin/1.0' } }
+    );
+    const data = await res.json();
+    if (data?.display_name) {
+      const parts = data.display_name.split(', ');
+      return parts.slice(0, 3).join(', ');
+    }
+  } catch {}
+  return '';
+}
+
+export default function TwoGisMap({ value, onChange, onAddressChange }: Props) {
   const mapContainerRef = useRef<HTMLDivElement>(null);
   const mapRef = useRef<any>(null);
   const markerRef = useRef<any>(null);
@@ -38,6 +54,10 @@ export default function TwoGisMap({ value, onChange }: Props) {
         markerRef.current.setLatLng([lat, lng]);
         mapRef.current.setView([lat, lng], 17);
         onChange(lat, lng);
+        if (onAddressChange) {
+          const label = results[0].label.split(', ').slice(0, 3).join(', ');
+          onAddressChange(label);
+        }
       }
     } catch (e) {
       console.error('Search failed', e);
@@ -93,15 +113,23 @@ export default function TwoGisMap({ value, onChange }: Props) {
       icon: activeOrderIcon
     }).addTo(mapRef.current);
 
-    markerRef.current.on('dragend', () => {
+    markerRef.current.on('dragend', async () => {
       const { lat, lng } = markerRef.current.getLatLng();
       onChange(lat, lng);
+      if (onAddressChange) {
+        const addr = await reverseGeocode(lat, lng);
+        if (addr) onAddressChange(addr);
+      }
     });
 
-    mapRef.current.on('click', (e: any) => {
+    mapRef.current.on('click', async (e: any) => {
       const { lat, lng } = e.latlng;
       markerRef.current.setLatLng([lat, lng]);
       onChange(lat, lng);
+      if (onAddressChange) {
+        const addr = await reverseGeocode(lat, lng);
+        if (addr) onAddressChange(addr);
+      }
     });
 
     setIsLoaded(true);

@@ -1,6 +1,6 @@
 "use client";
 
-import { Table, Tag, Switch, Space, message, Button, Badge } from "antd";
+import { Table, Tag, Switch, Space, message, Button, Badge, Statistic, Row, Col, Card } from "antd";
 import { useCallback, useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
 import { api } from "../shared";
@@ -85,17 +85,40 @@ export default function SpecialistsTable() {
     return `${mins}м`;
   };
 
+  const onShiftCount = specialists.filter(s => s.isOnShift).length;
+
   return (
     <>
-    <div style={{ marginBottom: 16, display: 'flex', justifyContent: 'flex-end' }}>
-      <Button 
-        type="primary" 
-        onClick={() => setIsBroadcastModalOpen(true)}
-        style={{ background: '#212121' }}
-      >
-        Рассылка мастерам
-      </Button>
-    </div>
+    <Row gutter={16} style={{ marginBottom: 16 }}>
+      <Col span={6}>
+        <Card bordered={false} style={{ background: '#f6ffed', borderRadius: 8 }}>
+          <Statistic
+            title="На смене"
+            value={onShiftCount}
+            suffix={`/ ${specialists.length}`}
+            valueStyle={{ color: '#52c41a', fontWeight: 700 }}
+          />
+        </Card>
+      </Col>
+      <Col span={6}>
+        <Card bordered={false} style={{ background: '#f5f5f5', borderRadius: 8 }}>
+          <Statistic
+            title="Всего мастеров"
+            value={specialists.length}
+            valueStyle={{ color: '#595959', fontWeight: 700 }}
+          />
+        </Card>
+      </Col>
+      <Col span={12} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end' }}>
+        <Button
+          type="primary"
+          onClick={() => setIsBroadcastModalOpen(true)}
+          style={{ background: '#212121' }}
+        >
+          Рассылка мастерам
+        </Button>
+      </Col>
+    </Row>
 
     <Table
       loading={loading}

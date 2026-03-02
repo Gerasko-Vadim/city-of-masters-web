@@ -6,6 +6,7 @@ import { OrderStatus } from "../shared/order";
 import { mapOrderStatusToLabel } from "../orders/lib";
 import { io } from "socket.io-client";
 import { API_PATH } from "../shared/api";
+import { Radio } from "antd";
 
 const KYRGYZ_BOUNDS = [
   [39.1, 69.1], // Southwest
@@ -25,6 +26,7 @@ export default function GlobalMap() {
   const [isLoaded, setIsLoaded] = useState(false);
   const [orders, setOrders] = useState<any[]>([]);
   const [specialists, setSpecialists] = useState<any[]>([]);
+  const [orderFilter, setOrderFilter] = useState<'today' | 'all'>('today');
 
   useEffect(() => {
     const fetchData = async () => {
@@ -122,8 +124,15 @@ export default function GlobalMap() {
     const DG = require("2gis-maps");
     const markers: any[] = [];
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const filteredOrders = orderFilter === 'today'
+      ? orders.filter(o => o.createdAt && new Date(o.createdAt) >= today)
+      : orders;
+
     // Order markers
-    orders.forEach(order => {
+    filteredOrders.forEach(order => {
       if (order.lat && order.lng) {
         const color = statusColors[order.status] || "#d9d9d9";
         
@@ -184,13 +193,37 @@ export default function GlobalMap() {
     return () => {
       markers.forEach(m => m.remove());
     };
-  }, [orders, specialists, isLoaded]);
+  }, [orders, specialists, isLoaded, orderFilter]);
 
   return (
     <div style={{ height: "calc(100vh - 200px)", width: "100%", position: "relative" }}>
-      <div 
-        ref={mapContainerRef} 
-        style={{ height: "100%", width: "100%", borderRadius: 12, border: "1px solid #ddd" }} 
+      {/* Order filter toggle */}
+      <div style={{
+        position: "absolute",
+        top: 12,
+        left: 12,
+        zIndex: 1000,
+        backgroundColor: "rgba(255,255,255,0.95)",
+        padding: "6px 10px",
+        borderRadius: 8,
+        boxShadow: "0 2px 8px rgba(0,0,0,0.15)",
+      }}>
+        <Radio.Group
+          size="small"
+          value={orderFilter}
+          onChange={(e) => setOrderFilter(e.target.value)}
+          optionType="button"
+          buttonStyle="solid"
+          options={[
+            { label: 'Сегодня', value: 'today' },
+            { label: 'Все заказы', value: 'all' },
+          ]}
+        />
+      </div>
+
+      <div
+        ref={mapContainerRef}
+        style={{ height: "100%", width: "100%", borderRadius: 12, border: "1px solid #ddd" }}
       />
       
       {/* Legend */}

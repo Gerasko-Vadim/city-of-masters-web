@@ -86,10 +86,6 @@ export default function CreateOrderModal({ open, onClose, onCreated }: Props) {
           <Input placeholder="+996(555)662-999" />
         </Form.Item>
 
-        <Form.Item label="Адрес" name="address" rules={[{ required: true }]}>
-          <Input />
-        </Form.Item>
-
         <Form.Item label="Описание" name="description">
           <Input.TextArea rows={3} placeholder="Введите описание или выберите из списка" />
         </Form.Item>
@@ -162,12 +158,27 @@ export default function CreateOrderModal({ open, onClose, onCreated }: Props) {
           <Input />
         </Form.Item>
 
-        <Form.Item label="Точка на карте">
+        <Form.Item label="Поиск и точка на карте">
+          <div style={{ fontSize: 12, color: '#8c8c8c', marginBottom: 6 }}>
+            Введите адрес в поле поиска и нажмите <b>Найти</b>, или кликните на карту — адрес подставится автоматически.
+          </div>
           <MapPicker
             onChange={(lat, lng) => {
               form.setFieldsValue({ lat, lng });
             }}
+            onAddressChange={(address) => {
+              form.setFieldsValue({ address });
+            }}
           />
+        </Form.Item>
+
+        <Form.Item
+          label="Адрес"
+          name="address"
+          rules={[{ required: true, message: 'Выберите точку на карте или введите адрес' }]}
+          extra="Заполняется автоматически при выборе точки на карте"
+        >
+          <Input placeholder="Будет заполнен автоматически с карты" />
         </Form.Item>
       </Form>
     </Modal>
