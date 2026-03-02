@@ -86,26 +86,27 @@ export default function SpecialistsTable() {
   };
 
   const onShiftCount = specialists.filter(s => s.isOnShift).length;
+  const inProgressCount = specialists.filter(s => s.hasActiveOrder).length;
 
   return (
     <>
     <Row gutter={16} style={{ marginBottom: 16 }}>
       <Col span={6}>
-        <Card bordered={false} style={{ background: '#f6ffed', borderRadius: 8 }}>
+        <Card bordered={false} style={{ background: '#f6ffed', borderRadius: 8 }} styles={{ body: { padding: '10px 16px' } }}>
           <Statistic
             title="На смене"
             value={onShiftCount}
             suffix={`/ ${specialists.length}`}
-            valueStyle={{ color: '#52c41a', fontWeight: 700 }}
+            valueStyle={{ color: '#52c41a', fontWeight: 700, fontSize: 22 }}
           />
         </Card>
       </Col>
       <Col span={6}>
-        <Card bordered={false} style={{ background: '#f5f5f5', borderRadius: 8 }}>
+        <Card bordered={false} style={{ background: '#e6f4ff', borderRadius: 8 }} styles={{ body: { padding: '10px 16px' } }}>
           <Statistic
-            title="Всего мастеров"
-            value={specialists.length}
-            valueStyle={{ color: '#595959', fontWeight: 700 }}
+            title="В работе"
+            value={inProgressCount}
+            valueStyle={{ color: '#1677ff', fontWeight: 700, fontSize: 22 }}
           />
         </Card>
       </Col>
