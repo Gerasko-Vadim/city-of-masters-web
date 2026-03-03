@@ -9,6 +9,25 @@ interface BroadcastModalProps {
   onClose: () => void;
 }
 
+const TEMPLATES = [
+  {
+    label: "📦 Есть заказ",
+    text: "Уважаемые мастера, есть заказ на [тип работы] по адресу [адрес]. Кто готов взять — отправьте геопозицию!",
+  },
+  {
+    label: "⚠️ Важно",
+    text: "Уважаемые мастера, важное обновление: ",
+  },
+  {
+    label: "✅ Объявление",
+    text: "Уважаемые мастера! ",
+  },
+  {
+    label: "🎉 Акция",
+    text: "Уважаемые мастера, специальное предложение: ",
+  },
+];
+
 export default function BroadcastModal({ open, onClose }: BroadcastModalProps) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
@@ -60,14 +79,36 @@ export default function BroadcastModal({ open, onClose }: BroadcastModalProps) {
             <Select.Option value="OFF_SHIFT">Тем, кто не на смене</Select.Option>
           </Select>
         </Form.Item>
+        <Form.Item label="Текст сообщения" style={{ marginBottom: 0 }}>
+          <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+            {TEMPLATES.map((tpl) => (
+              <button
+                key={tpl.label}
+                type="button"
+                onClick={() => form.setFieldValue("text", tpl.text)}
+                style={{
+                  padding: "4px 10px",
+                  fontSize: 13,
+                  borderRadius: 6,
+                  border: "1px solid #d9d9d9",
+                  background: "#fafafa",
+                  cursor: "pointer",
+                  lineHeight: "1.4",
+                }}
+              >
+                {tpl.label}
+              </button>
+            ))}
+          </div>
+        </Form.Item>
         <Form.Item
           name="text"
-          label="Текст сообщения"
           rules={[{ required: true, message: "Введите текст сообщения" }]}
+          style={{ marginBottom: 0 }}
         >
-          <Input.TextArea 
-            rows={6} 
-            placeholder="Введите текст сообщения для мастеров... Можно использовать HTML теги (<b>, <i>, и т.д.)" 
+          <Input.TextArea
+            rows={6}
+            placeholder="Введите текст сообщения для мастеров... Можно использовать HTML теги (<b>, <i>, и т.д.)"
           />
         </Form.Item>
       </Form>
