@@ -136,18 +136,30 @@ export default function SpecialistsTable() {
       })}
       columns={[
         { title: "ID", dataIndex: "id", width: 60 },
-        { 
-          title: "Имя", 
-          render: (_, record: any) => (
-            <Badge count={record.unreadCount} offset={[10, 0]}>
-              {record.name || `Спец #${record.id}`}
-            </Badge>
-          )
-        },
-        { 
-          title: "Username", 
-          dataIndex: "username",
-          render: (username: string) => username ? <a href={`https://t.me/${username}`} target="_blank" rel="noopener noreferrer">@{username}</a> : '-' 
+        {
+          title: "Имя / ФИО",
+          render: (_, record: any) => {
+            const display = record.fullName || record.name || `Спец #${record.id}`;
+            const username = record.username;
+            return (
+              <Badge count={record.unreadCount} offset={[10, 0]}>
+                <div>
+                  <div>{display}</div>
+                  {username && (
+                    <a
+                      href={`https://t.me/${username}`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      style={{ fontSize: 12, color: '#8c8c8c' }}
+                      onClick={e => e.stopPropagation()}
+                    >
+                      @{username}
+                    </a>
+                  )}
+                </div>
+              </Badge>
+            );
+          }
         },
         { 
           title: "Статус", 
