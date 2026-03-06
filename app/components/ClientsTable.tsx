@@ -1,10 +1,11 @@
 "use client";
 
-import { Table, Tag, Space, Row, Col, Card, Statistic, Button, message } from "antd";
-import { useEffect, useState, useRef } from "react";
+import { Table, Tag, Space, Row, Col, Card, Statistic, Button } from "antd";
+import { useEffect, useState } from "react";
 import { api } from "../shared";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
+import ClientBroadcastModal from "./ClientBroadcastModal";
 
 function formatCountdown(targetIso: string): string | null {
   const diff = new Date(targetIso).getTime() - Date.now();
@@ -22,14 +23,9 @@ export default function ClientsTable() {
   const [clients, setClients] = useState([]);
   const [loading, setLoading] = useState(true);
   const [currentPage, setCurrentPage] = useState<number>(1);
-  const [broadcastStatus, setBroadcastStatus] = useState<{
-    enabled: boolean;
-    nextAt: string;
-    lastSentAt: string | null;
-  } | null>(null);
-  const [broadcastLoading, setBroadcastLoading] = useState(false);
+  const [isBroadcastModalOpen, setIsBroadcastModalOpen] = useState(false);
+  const [nextBroadcastAt, setNextBroadcastAt] = useState<string | null>(null);
   const [countdown, setCountdown] = useState("");
-  const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
   useEffect(() => {
     const savedPage = sessionStorage.getItem("clients_page");
@@ -47,44 +43,20 @@ export default function ClientsTable() {
     }
   };
 
-  const fetchBroadcastStatus = async () => {
-    try {
-      const res = await api.get("/clients/broadcast-status");
-      setBroadcastStatus(res.data);
-    } catch (err) {
-      console.error("Failed to fetch broadcast status", err);
-    }
-  };
-
   useEffect(() => {
     fetchClients();
-    fetchBroadcastStatus();
+    api.get("/clients/broadcast-status")
+      .then(res => setNextBroadcastAt(res.data.nextAt))
+      .catch(() => {});
   }, []);
 
   useEffect(() => {
-    if (!broadcastStatus?.enabled || !broadcastStatus.nextAt) {
-      setCountdown("");
-      if (timerRef.current) clearInterval(timerRef.current);
-      return;
-    }
-    const update = () => setCountdown(formatCountdown(broadcastStatus.nextAt) ?? "");
+    if (!nextBroadcastAt) return;
+    const update = () => setCountdown(formatCountdown(nextBroadcastAt) ?? "");
     update();
-    timerRef.current = setInterval(update, 60000);
-    return () => { if (timerRef.current) clearInterval(timerRef.current); };
-  }, [broadcastStatus]);
-
-  const handleToggleBroadcast = async () => {
-    setBroadcastLoading(true);
-    try {
-      const res = await api.post("/clients/broadcast-toggle");
-      setBroadcastStatus(res.data);
-      message.success(res.data.enabled ? "Рассылка запущена" : "Рассылка остановлена");
-    } catch (err) {
-      message.error("Ошибка");
-    } finally {
-      setBroadcastLoading(false);
-    }
-  };
+    const id = setInterval(update, 60000);
+    return () => clearInterval(id);
+  }, [nextBroadcastAt]);
 
   const columns = [
     {
@@ -123,8 +95,6 @@ export default function ClientsTable() {
     },
   ];
 
-  const broadcastEnabled = broadcastStatus?.enabled ?? true;
-
   return (
     <>
       <Row gutter={16} style={{ marginBottom: 16 }}>
@@ -138,22 +108,17 @@ export default function ClientsTable() {
           </Card>
         </Col>
         <Col span={18} style={{ display: 'flex', alignItems: 'center', justifyContent: 'flex-end', gap: 8 }}>
-          {broadcastStatus?.lastSentAt && (
-            <span style={{ fontSize: 12, color: '#8c8c8c' }}>
-              Отправлено: {dayjs(broadcastStatus.lastSentAt).format("DD.MM HH:mm")}
-            </span>
-          )}
           {countdown && (
             <span style={{ fontSize: 12, color: '#1677ff' }}>
-              Рассылка отправится {countdown}
+              Авторассылка {countdown}
             </span>
           )}
           <Button
             type="primary"
-            loading={broadcastLoading}
-            onClick={handleToggleBroadcast}
+            style={{ background: '#212121' }}
+            onClick={() => setIsBroadcastModalOpen(true)}
           >
-            {broadcastEnabled ? "Остановить рассылку" : "Запустить рассылку"}
+            Рассылка клиентам
           </Button>
         </Col>
       </Row>
@@ -177,6 +142,11 @@ export default function ClientsTable() {
             backgroundColor: record.unreadCount > 0 ? '#fff1f0' : (record.hasNewOrder ? '#fffbe6' : 'inherit')
           }
         })}
+      />
+
+      <ClientBroadcastModal
+        open={isBroadcastModalOpen}
+        onClose={() => setIsBroadcastModalOpen(false)}
       />
     </>
   );
