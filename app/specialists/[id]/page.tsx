@@ -168,7 +168,8 @@ export default function SpecialistDetailPage({ params }: { params: Promise<{ id:
               <Button
                 type="default"
                 href={specialist.username ? `https://t.me/${specialist.username}` : `tg://user?id=${specialist.telegramId}`}
-                target="_blank"
+                target={specialist.username ? "_blank" : "_self"}
+                rel="noopener noreferrer"
                 icon={<span>✈️</span>}
               >
                 Написать
