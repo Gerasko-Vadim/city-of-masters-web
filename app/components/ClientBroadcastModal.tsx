@@ -1,7 +1,7 @@
 "use client";
 
-import { Modal, Form, Input, message } from "antd";
-import { useState } from "react";
+import { Modal, Form, Input, message, Switch, Divider, Typography } from "antd";
+import { useEffect, useState } from "react";
 import { api } from "../shared";
 
 interface ClientBroadcastModalProps {
@@ -31,20 +31,54 @@ const TEMPLATES = [
 export default function ClientBroadcastModal({ open, onClose }: ClientBroadcastModalProps) {
   const [form] = Form.useForm();
   const [loading, setLoading] = useState(false);
+  const [autoText, setAutoText] = useState("");
+  const [autoEnabled, setAutoEnabled] = useState(true);
+  const [autoSaving, setAutoSaving] = useState(false);
+  const [autoToggling, setAutoToggling] = useState(false);
+
+  useEffect(() => {
+    if (!open) return;
+    api.get("/clients/broadcast-auto-text").then(res => setAutoText(res.data.text)).catch(() => {});
+    api.get("/clients/broadcast-status").then(res => setAutoEnabled(res.data.enabled)).catch(() => {});
+  }, [open]);
 
   const handleSubmit = async () => {
     try {
       const values = await form.validateFields();
       setLoading(true);
       const res = await api.post("/clients/broadcast-now", { text: values.text });
-      message.success(`Сообщение отправлено ${res.data.sent} из ${res.data.total} клиентов`);
+      message.success(`Отправлено ${res.data.sent} из ${res.data.total} клиентов`);
       form.resetFields();
       onClose();
     } catch (error) {
-      console.error("Broadcast failed", error);
       message.error("Не удалось отправить рассылку");
     } finally {
       setLoading(false);
+    }
+  };
+
+  const handleSaveAutoText = async () => {
+    setAutoSaving(true);
+    try {
+      await api.post("/clients/broadcast-auto-text", { text: autoText });
+      message.success("Текст авторассылки сохранён");
+    } catch {
+      message.error("Ошибка сохранения");
+    } finally {
+      setAutoSaving(false);
+    }
+  };
+
+  const handleToggleAuto = async (checked: boolean) => {
+    setAutoToggling(true);
+    try {
+      const res = await api.post("/clients/broadcast-toggle");
+      setAutoEnabled(res.data.enabled);
+      message.success(res.data.enabled ? "Авторассылка включена" : "Авторассылка выключена");
+    } catch {
+      message.error("Ошибка");
+    } finally {
+      setAutoToggling(false);
     }
   };
 
@@ -55,8 +89,9 @@ export default function ClientBroadcastModal({ open, onClose }: ClientBroadcastM
       onCancel={onClose}
       onOk={handleSubmit}
       confirmLoading={loading}
-      okText="Отправить"
-      cancelText="Отмена"
+      okText="Отправить сейчас"
+      cancelText="Закрыть"
+      width={560}
     >
       <Form form={form} layout="vertical">
         <Form.Item label="Текст сообщения" style={{ marginBottom: 0 }}>
@@ -87,11 +122,49 @@ export default function ClientBroadcastModal({ open, onClose }: ClientBroadcastM
           style={{ marginBottom: 0 }}
         >
           <Input.TextArea
-            rows={6}
-            placeholder="Введите текст сообщения для клиентов... Можно использовать HTML теги (<b>, <i>, и т.д.)"
+            rows={5}
+            placeholder="Текст для немедленной отправки... Поддерживается HTML (<b>, <i>)"
           />
         </Form.Item>
       </Form>
+
+      <Divider />
+
+      <div>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+          <Typography.Text strong>Авторассылка (каждую субботу в 09:00)</Typography.Text>
+          <Switch
+            checked={autoEnabled}
+            loading={autoToggling}
+            onChange={handleToggleAuto}
+            checkedChildren="Вкл"
+            unCheckedChildren="Выкл"
+          />
+        </div>
+        <Input.TextArea
+          rows={4}
+          value={autoText}
+          onChange={e => setAutoText(e.target.value)}
+          placeholder="Текст авторассылки..."
+          style={{ marginBottom: 8 }}
+        />
+        <button
+          type="button"
+          disabled={autoSaving}
+          onClick={handleSaveAutoText}
+          style={{
+            padding: "4px 16px",
+            fontSize: 13,
+            borderRadius: 6,
+            border: "1px solid #1677ff",
+            background: "#e6f4ff",
+            color: "#1677ff",
+            cursor: "pointer",
+          }}
+        >
+          {autoSaving ? "Сохранение..." : "Сохранить текст авторассылки"}
+        </button>
+      </div>
     </Modal>
   );
 }
