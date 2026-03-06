@@ -74,6 +74,7 @@ export default function ClientBroadcastModal({ open, onClose }: ClientBroadcastM
   // Auto tab
   const [autoText, setAutoText] = useState("");
   const [autoEnabled, setAutoEnabled] = useState(true);
+  const [autoButtonVisible, setAutoButtonVisible] = useState(true);
   const [autoSaving, setAutoSaving] = useState(false);
   const [autoToggling, setAutoToggling] = useState(false);
 
@@ -82,7 +83,10 @@ export default function ClientBroadcastModal({ open, onClose }: ClientBroadcastM
 
   useEffect(() => {
     if (!open) return;
-    api.get("/clients/broadcast-auto-text").then(res => setAutoText(res.data.text)).catch(() => {});
+    api.get("/clients/broadcast-auto-text").then(res => {
+      setAutoText(res.data.text);
+      setAutoButtonVisible(res.data.buttonVisible ?? true);
+    }).catch(() => {});
     api.get("/clients/broadcast-status").then(res => setAutoEnabled(res.data.enabled)).catch(() => {});
     loadScheduled();
   }, [open]);
@@ -140,7 +144,7 @@ export default function ClientBroadcastModal({ open, onClose }: ClientBroadcastM
   const handleSaveAutoText = async () => {
     setAutoSaving(true);
     try {
-      await api.post("/clients/broadcast-auto-text", { text: autoText });
+      await api.post("/clients/broadcast-auto-text", { text: autoText, buttonVisible: autoButtonVisible });
       message.success("Текст авторассылки сохранён");
     } catch {
       message.error("Ошибка сохранения");
@@ -271,14 +275,25 @@ export default function ClientBroadcastModal({ open, onClose }: ClientBroadcastM
             />
           </div>
           <Input.TextArea
-            rows={7}
+            rows={6}
             value={autoText}
             onChange={e => setAutoText(e.target.value)}
             placeholder="Текст авторассылки..."
             style={{ marginBottom: 12 }}
           />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+            <Typography.Text style={{ fontSize: 13 }}>
+              Кнопка "Заказать мастера" под сообщением
+            </Typography.Text>
+            <Switch
+              checked={autoButtonVisible}
+              onChange={setAutoButtonVisible}
+              checkedChildren="Показывать"
+              unCheckedChildren="Скрыть"
+            />
+          </div>
           <Button onClick={handleSaveAutoText} loading={autoSaving} block>
-            Сохранить текст авторассылки
+            Сохранить
           </Button>
         </div>
       ),
