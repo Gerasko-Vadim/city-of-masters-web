@@ -134,7 +134,8 @@ export default function ClientDetailPage() {
                 <Button
                   type="primary"
                   href={client.username ? `https://t.me/${client.username}` : `tg://user?id=${client.telegramId}`}
-                  target="_blank"
+                  target={client.username ? "_blank" : "_self"}
+                  rel="noopener noreferrer"
                   icon={<span>✈️</span>}
                 >
                   Написать в Telegram
