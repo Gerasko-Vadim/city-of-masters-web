@@ -127,8 +127,22 @@ export default function ClientDetailPage() {
 
       <div className="flex flex-col lg:flex-row gap-6">
         <div className="lg:w-[70%] space-y-6">
-          <Card>
-            <Descriptions title="Информация о клиенте" bordered>
+          <Card
+            title={
+              <div className="flex items-center justify-between">
+                <span>Информация о клиенте</span>
+                <Button
+                  type="primary"
+                  href={client.username ? `https://t.me/${client.username}` : `tg://user?id=${client.telegramId}`}
+                  target="_blank"
+                  icon={<span>✈️</span>}
+                >
+                  Написать в Telegram
+                </Button>
+              </div>
+            }
+          >
+            <Descriptions bordered>
               <Descriptions.Item label="Имя">{client.firstName} {client.lastName}</Descriptions.Item>
               <Descriptions.Item label="Username">{client.username ? `@${client.username}` : "-"}</Descriptions.Item>
               <Descriptions.Item label="Телефон">{client.phone || "-"}</Descriptions.Item>

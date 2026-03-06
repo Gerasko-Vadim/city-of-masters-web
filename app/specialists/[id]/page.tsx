@@ -157,7 +157,7 @@ export default function SpecialistDetailPage({ params }: { params: Promise<{ id:
                 </Text>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-2 flex-wrap">
               <Tag color={specialist.fullName && specialist.phone ? "green" : "orange"}>
                 {specialist.fullName && specialist.phone ? "Профиль заполнен" : "Профиль не заполнен"}
               </Tag>
@@ -165,6 +165,14 @@ export default function SpecialistDetailPage({ params }: { params: Promise<{ id:
               <Tag color={specialist.isOnShift ? "green" : "default"}>
                 {specialist.isOnShift ? "На смене" : "Не на смене"}
               </Tag>
+              <Button
+                type="default"
+                href={specialist.username ? `https://t.me/${specialist.username}` : `tg://user?id=${specialist.telegramId}`}
+                target="_blank"
+                icon={<span>✈️</span>}
+              >
+                Написать
+              </Button>
               <Button
                 danger={!specialist.isBanned}
                 type={specialist.isBanned ? "default" : "primary"}
