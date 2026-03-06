@@ -158,6 +158,9 @@ export default function SpecialistDetailPage({ params }: { params: Promise<{ id:
               </div>
             </div>
             <div className="flex items-center gap-2">
+              <Tag color={specialist.fullName && specialist.phone ? "green" : "orange"}>
+                {specialist.fullName && specialist.phone ? "Профиль заполнен" : "Профиль не заполнен"}
+              </Tag>
               {specialist.isBanned && <Tag color="error">Заблокирован</Tag>}
               <Tag color={specialist.isOnShift ? "green" : "default"}>
                 {specialist.isOnShift ? "На смене" : "Не на смене"}
