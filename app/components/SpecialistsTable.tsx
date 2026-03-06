@@ -161,8 +161,14 @@ export default function SpecialistsTable() {
             );
           }
         },
-        { 
-          title: "Статус", 
+        {
+          title: "Профиль",
+          render: (_: any, record: any) => record.fullName && record.phone
+            ? <Tag color="green">Зарегистрирован</Tag>
+            : <Tag color="orange">Не заполнен</Tag>
+        },
+        {
+          title: "Статус",
           dataIndex: "isOnShift",
           render: (val: boolean) => val ? <Tag color="green">На смене</Tag> : <Tag color="default">Не на смене</Tag>
         },
