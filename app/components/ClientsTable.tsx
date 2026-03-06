@@ -6,14 +6,13 @@ import { api } from "../shared";
 import dayjs from "dayjs";
 import { useRouter } from "next/navigation";
 
-function formatCountdown(targetIso: string): string {
+function formatCountdown(targetIso: string): string | null {
   const diff = new Date(targetIso).getTime() - Date.now();
   if (diff <= 0) return "сейчас";
+  if (diff > 24 * 60 * 60 * 1000) return null; // only show within 24h
   const totalSec = Math.floor(diff / 1000);
-  const d = Math.floor(totalSec / 86400);
-  const h = Math.floor((totalSec % 86400) / 3600);
+  const h = Math.floor(totalSec / 3600);
   const m = Math.floor((totalSec % 3600) / 60);
-  if (d > 0) return `через ${d}д ${h}ч`;
   if (h > 0) return `через ${h}ч ${m}м`;
   return `через ${m}м`;
 }
@@ -68,9 +67,9 @@ export default function ClientsTable() {
       if (timerRef.current) clearInterval(timerRef.current);
       return;
     }
-    const update = () => setCountdown(formatCountdown(broadcastStatus.nextAt));
+    const update = () => setCountdown(formatCountdown(broadcastStatus.nextAt) ?? "");
     update();
-    timerRef.current = setInterval(update, 30000);
+    timerRef.current = setInterval(update, 60000);
     return () => { if (timerRef.current) clearInterval(timerRef.current); };
   }, [broadcastStatus]);
 
@@ -144,15 +143,17 @@ export default function ClientsTable() {
               Отправлено: {dayjs(broadcastStatus.lastSentAt).format("DD.MM HH:mm")}
             </span>
           )}
+          {countdown && (
+            <span style={{ fontSize: 12, color: '#1677ff' }}>
+              Рассылка отправится {countdown}
+            </span>
+          )}
           <Button
-            type={broadcastEnabled ? "default" : "primary"}
-            danger={broadcastEnabled}
+            type="primary"
             loading={broadcastLoading}
             onClick={handleToggleBroadcast}
           >
-            {broadcastEnabled
-              ? `Остановить рассылку${countdown ? ` (${countdown})` : ""}`
-              : "Запустить рассылку"}
+            {broadcastEnabled ? "Остановить рассылку" : "Запустить рассылку"}
           </Button>
         </Col>
       </Row>
